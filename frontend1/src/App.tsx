@@ -6,7 +6,7 @@ import Authenticated from "./components/Authenticated";
 import HomePage from "./pages/HomePage";
 import LogoutButton from "./components/Logout";
 import Layout from "./components/Layout";
-import Profile from "./pages/HomePage";
+import Profile from "./pages/Profile";
 import OnlineUser from "./components/OnineUser";
 import { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";

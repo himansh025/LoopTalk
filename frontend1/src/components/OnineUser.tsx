@@ -6,7 +6,6 @@ import axiosInstance from "../config/apiconfig";
 import type  {user}  from '../types/type.data';
 import SearchBar from "./OnSearch";
 import Messages from "./Messages";
-import { isRejected } from "@reduxjs/toolkit";
 
 const OnlineUser: React.FC = () => {
   const [onlineUsers, setOnlineUsers] = useState<user[]>([]);
@@ -18,7 +17,9 @@ const [openUserChat,setOpenUserChat]= useState(false);
 const [userData,setUserData]= useState({});
 
 
-  useEffect(() => {  const fetchAllUsers = async () => {
+  useEffect(() => { 
+    
+     const fetchAllUsers = async () => {
     try {
       const { data } = await axiosInstance.get("/user/all");
       // Filter out current user from all users
@@ -34,8 +35,27 @@ const [userData,setUserData]= useState({});
       setLoading(false);
     }
   };
-    fetchAllUsers();
+    
+     const getFriends = async () => {
+    try {
+      const { data } = await axiosInstance.get("/friend/friends");
+      // Filter out current user from all users
+      console.log(data)
+      // const me=user?.id
+    
+      setLoading(false);
+    } catch (error) {
+      console.error("Failed to fetch users:", error);
+      setLoading(false);
+    }
+  };
+
+      fetchAllUsers();
+    getFriends();
   }, []);
+
+
+  // friends
 
   const handleSearch=async(query:string)=>{
      try {
