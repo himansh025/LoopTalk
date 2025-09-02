@@ -1,3 +1,4 @@
+import mongoose from "mongoose"
 const friendshipSchema = new mongoose.Schema({
   requester: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   recipient: { type: mongoose.Schema.Types.ObjectId, ref: "User" },

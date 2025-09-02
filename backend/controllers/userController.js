@@ -1,6 +1,7 @@
 import { User } from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 export const register = async (req, res) => {
     try {
@@ -117,3 +118,49 @@ export const allUsers = async (req, res) => {
         console.log(error);
     }
 }
+export const profile = async (req, res) => {
+    try {
+          
+        const userProfile = await User.findOne(req.user?._id).select("-password");
+        return res.status(200).json({message:"userprofile is getting",userProfile});
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+
+// PUT /user/profile
+export const updateUserProfile = async (req, res) => {
+  try {
+      console.log(req.id)
+      const userId = req.id;
+    const { fullName, email } = req.body;
+
+    // build update object
+    const updateFields = {};
+    if (fullName) updateFields.fullName = fullName;
+    if (email) updateFields.email = email;
+
+    // if file uploaded by multer
+    if (req.file) {
+         const filePath = req.file.path
+      const result = await uploadOnCloudinary(filePath);
+      updateFields.profilePhoto= result.url;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: updateFields },
+      { new: true, runValidators: true }
+    ).select("-password");
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({ message: "Profile updated successfully", updatedUser });
+  } catch (error) {
+    console.error("Profile update error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};

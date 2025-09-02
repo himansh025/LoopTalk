@@ -1,4 +1,4 @@
-import { Friendship } from "../models/friendshipModel.js";
+import { Friendship } from "../models/FriendListModel.js";
 import { User } from "../models/userModel.js";
 
 // ✅ Send Friend Request
