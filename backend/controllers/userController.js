@@ -92,6 +92,7 @@ export const logout = (req, res) => {
 export const getOtherUsers = async (req, res) => {
     try {
         const loggedInUserId = req.id;
+        console.log("edc",loggedInUserId);
         const otherUsers = await User.find({ _id: { $ne: loggedInUserId } }).select("-password");
         return res.status(200).json(otherUsers);
     } catch (error) {
@@ -120,8 +121,10 @@ export const allUsers = async (req, res) => {
 }
 export const profile = async (req, res) => {
     try {
-          
-        const userProfile = await User.findOne(req.user?._id).select("-password");
+          console.log("id",req.id);
+      const userProfile = await User.findById(req.id).select("-password");
+
+        console.log("usr",userProfile);
         return res.status(200).json({message:"userprofile is getting",userProfile});
     } catch (error) {
         console.log(error);

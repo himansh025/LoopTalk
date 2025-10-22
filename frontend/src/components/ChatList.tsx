@@ -12,7 +12,9 @@ const ChatList: React.FC<ChatListProps> = ({ chats, onChatClick }) => {
   return (
     <div className="bg-white rounded-lg shadow-md w-full ml-3 md:mx-10 md:max-w-full  max-w-sm">
       {chats.length === 0 ? (
-        <p className="p-4 text-gray-500 text-center">No chats yet</p>
+        <div className="flex justify-center items-center w-full mt-20 ml-0 h-50">
+        <p className="p-4 text-blue-500 text-center">No chats yet</p>
+        </div>
       ) : (
         <>
            <p className="p-4 text-gray-500 ">All Chats : {chats?.length} </p>

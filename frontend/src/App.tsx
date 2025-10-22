@@ -10,6 +10,7 @@ import Profile from "./pages/Profile";
 import OnlineUser from "./components/OnineUser";
 import { useEffect } from "react";
 import { initSocket } from "./socket";
+import { ToastContainer } from "react-toastify";
 
 function App() {
     const { user } = useAppSelector((state) => state.auth);
@@ -30,6 +31,8 @@ function App() {
 
     return (
         <BrowserRouter>
+        <div>
+
             <Routes>
                 <Route path="/" element={<Layout />}>
                     <Route path="/login" element={<Login />} />
@@ -44,6 +47,8 @@ function App() {
                     </Route>
                 </Route>
             </Routes>
+            <ToastContainer/>
+        </div>
         </BrowserRouter>
     );
 }

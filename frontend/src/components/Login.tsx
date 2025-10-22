@@ -5,9 +5,9 @@ import { toast } from "react-toastify";
 import axiosInstance from "../config/apiconfig";
 import { useState } from "react";
 import { z } from "zod";
-import { useAppDispatch } from "../hooks/hooks";
 import { login } from "../store/authSlicer";
 import { Lock, LogIn, Mail } from "lucide-react";
+import { useDispatch } from "react-redux";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -19,7 +19,7 @@ type loginFormData = z.infer<typeof loginSchema>;
 function Login() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const dispatch = useAppDispatch();
+  const dispatch = useDispatch();
 
   const {
     register,
@@ -31,8 +31,10 @@ function Login() {
 
   const onSubmit = async (data: loginFormData) => {
     setLoading(true);
+    console.log(data);
     try {
       const response = await axiosInstance.post("/user/login", data);
+      console.log(response);
       const userData = response.data;
 
       dispatch(
@@ -49,7 +51,8 @@ function Login() {
       toast.success("Login successful!");
       navigate("/");
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Login failed");
+      console.log(error.response.data.message);
+      toast.error(error.response.data.message || "Login failed");
     } finally {
       setLoading(false);
     }

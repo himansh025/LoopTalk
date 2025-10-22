@@ -1,11 +1,15 @@
 // src/socket.ts
 import { io, Socket } from "socket.io-client";
 
+const apiUrl:string = import.meta.env.VITE_API_URL;
+console.log(apiUrl);
+const socketurl:string = import.meta.env.VITE_SOCKET_API_URL;
+console.log(socketurl);
 let socket: Socket | null = null;
 
 
 export const initSocket = (userId: string) => {
-    socket = io("http://localhost:3000");
+    socket = io(socketurl);
 
     socket.on("connect", () => {
         console.log("✅ Connected to server");

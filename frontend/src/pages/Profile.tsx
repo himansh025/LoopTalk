@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../config/apiconfig";
+import { toast } from "react-toastify";
+import { da } from "zod/v4/locales";
 
 const Profile = () => {
   const [userData, setUserData] = useState<any>({});
   const [editModel, setEditModel] = useState(false);
+  const [loading,setLoading]= useState(false)
   const [previewImg, setPreviewImg] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>({
     fullName: "",
@@ -15,9 +18,12 @@ const Profile = () => {
   useEffect(() => {
     const getUserProfile = async () => {
       try {
+        setLoading(true)
         const { data } = await axiosInstance.get("/user/profile");
+        console.log(data);
         const userProfile = data?.userProfile;
         setUserData(userProfile);
+        toast.success(data.message)
         setFormData({
           fullName: userProfile?.fullName || "",
           email: userProfile?.email || "",
@@ -25,6 +31,9 @@ const Profile = () => {
         });
       } catch (error: any) {
         console.error("Fetching profile failed:", error?.message);
+        toast.error(error.message)
+      }finally{
+        setLoading(false)
       }
     };
     getUserProfile();
@@ -46,6 +55,7 @@ const Profile = () => {
     e.preventDefault();
 
     try {
+      setLoading(true)
       const updateData = new FormData();
       updateData.append("fullName", formData.fullName);
       updateData.append("email", formData.email);
@@ -62,9 +72,18 @@ const Profile = () => {
       setPreviewImg(null);
     } catch (error: any) {
       console.error("Profile update failed:", error?.message);
+    }finally{
+      setLoading(false)
     }
   };
 
+  if (loading) {
+    return (
+      <div className="h-screen flex justify-center items-center">
+        <div className="animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
   // Edit profile modal
   if (editModel) {
     return (
@@ -153,6 +172,32 @@ const Profile = () => {
         <p className="text-gray-500">{userData?.email}</p>
       </div>
 
+           <div className="mt-6 border-t pt-2">
+        <p className="text-sm text-gray-500">
+          Gender:{" "}
+          {userData?.gender
+            ? userData.gender
+            : "N/A"}
+        </p>
+      </div>
+
+      <div className="mt-6 border-t pt-2">
+        <p className="text-sm text-gray-500">
+          Friends:{" "}
+          {userData?.friends
+            ? userData.friends.length
+            : "N/A"}
+        </p>
+      </div>
+
+     <div className="mt-6 border-t pt-2">
+        <p className="text-sm text-gray-500">
+          Friend Requests:{" "}
+          {userData?.friendRequests
+            ? userData.friendRequests.length
+            : "N/A"}
+        </p>
+      </div>
       {/* Additional Info */}
       <div className="mt-6 border-t pt-4">
         <p className="text-sm text-gray-500">
@@ -162,6 +207,8 @@ const Profile = () => {
             : "N/A"}
         </p>
       </div>
+
+
 
       {/* Edit Button */}
       <div className="mt-6 flex justify-center">

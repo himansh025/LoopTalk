@@ -1,18 +1,26 @@
 // OnlineUser.tsx - Responsive width for large screens
-import React, { useEffect, useState } from "react";
-import { socket } from "../App";
-import { useAppSelector } from "../hooks/hooks";
+import React, { use, useEffect, useId, useState } from "react";
+import {  initSocket,getSocket} from "../socket";
 import axiosInstance from "../config/apiconfig";
-import type  {user}  from '../types/type.data';
 import SearchBar from "./OnSearch";
 import Messages from "./Messages";
+import { useSelector } from "react-redux";
+interface user2 {
+    id:string;
+    name:string;
+    avatar:string;
+    email:string;
+    username:string;
+    online:boolean;
+    gender:string
+}
 
 const OnlineUser: React.FC = () => {
-  const [onlineUsers, setOnlineUsers] = useState<user[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<user2[]>([]);
   const [allUsers, setAllUsers] = useState<[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'online' | 'all'>('online');
-const {user}= useAppSelector((state)=>state.auth)
+const {user}= useSelector((state:any)=>state.auth)
 const [openUserChat,setOpenUserChat]= useState(false);
 const [userData,setUserData]= useState({});
 
@@ -70,6 +78,8 @@ const [userData,setUserData]= useState({});
   }
 
   useEffect(() => {
+    const socket= getSocket()||initSocket(user.id);
+    console.log("socket",socket);
     if (!socket || allUsers.length === 0) return;
 
     socket.on("getOnlineUsers", (onlineUserIds: string[]) => {
@@ -79,10 +89,10 @@ const [userData,setUserData]= useState({});
       const filteredOnlineIds = onlineUserIds.filter(id => id !== user?.id);
       
       // Find online users from allUsers array
-      console.log(filteredOnlineIds);
+      console.log("filtered",filteredOnlineIds);
       
-      console.log("fd",allUsers)
-      const updatedOnlineUsers = allUsers.filter((user) =>{
+      console.log("allusers",allUsers)
+      const updatedOnlineUsers = allUsers.filter((user:any) =>{
 console.log(user);
          return filteredOnlineIds.includes(user?._id)
       } 
@@ -132,7 +142,8 @@ if(openUserChat){
   }
 
   const displayUsers = activeTab === 'online' ? onlineUsers : allUsers;
-  const isUserOnline = (userId: string) => {
+  const isUserOnline = (userId: any) => {
+    console.log(useId);
     return onlineUsers.some(user => (user?.id || user.id) === userId);
   };
 

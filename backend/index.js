@@ -1,5 +1,4 @@
-// const express = require('express')// method-1
-import express from "express"; // method-2
+import express from "express";
 import dotenv from "dotenv"; 
 import connectDB from "./config/database.js";
 import userRoute from "./routes/userRoute.js";
@@ -18,10 +17,10 @@ app.use(express.urlencoded({extended:true}));
 app.use(express.json()); 
 app.use(cookieParser());
 const corsOption={
-    origin:['http://localhost:5173 ',`${process.env.CLIENT}`],
+    origin:['http://localhost:5173',`${process.env.CLIENT}`],
     credentials:true
 };
-app.use(cors(corsOption));
+app.use(cors("*"));
 
 
 

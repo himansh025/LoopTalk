@@ -78,7 +78,7 @@ export const rejectFriendRequest = async (req, res) => {
 // ✅ Get All Friends of a User
 export const getFriends = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.id;
 
     const friends = await Friendship.find({
       $or: [{ requester: userId }, { recipient: userId }],

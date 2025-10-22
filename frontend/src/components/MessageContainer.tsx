@@ -4,14 +4,16 @@ import axiosInstance from "../config/apiconfig";
 import { toast } from "react-toastify";
 import Messages from "./Messages";
 import { ArrowLeftCircle } from "lucide-react";
-import { socket } from "../App"; // Import socket
+import { initSocket,getSocket } from "../socket"; // Import socket
 import { setChats } from "../store/chatSlicer";
+import { useSelector } from "react-redux";
 
 interface Props {
   currentUserId: string;
 }
 
 export default function MessageContainer({ currentUserId }: Props) {
+    const { user } = useSelector((state:any) => state.auth);
   const [allChat, setAllChat] = useState<any[]>([]);
   const [userChatId, setUserChatId] = useState("");
   const [loading, setLoading] = useState(true);
@@ -53,6 +55,12 @@ export default function MessageContainer({ currentUserId }: Props) {
   };
 
   useEffect(() => {
+     let socket:any
+    if(user){
+       socket=getSocket()||initSocket(user.id)
+      // console.log(user);
+
+    }
     if (socket) {
         getAllChat(); }
 

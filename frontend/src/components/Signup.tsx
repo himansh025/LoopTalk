@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, useNavigate } from "react-router-dom";
 import { UserPlus, Lock, User } from "lucide-react";
-import { MdEmail, MdPassword } from "react-icons/md";
+import { MdEmail } from "react-icons/md";
 import axiosInstance from "../config/apiconfig";
 import { toast } from "react-toastify";
 
@@ -30,13 +30,15 @@ function Signup() {
 
   const onSubmit = async (data: SignupFormData) => {
     try {
+      console.log(data);
       const response = await axiosInstance.post("/user/register", data);
       if (response?.data) {
         toast.success("Registration successful! Please login.");
         navigate("/login");
       }
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Registration failed");
+      console.log(error);
+      toast.error(error?.response?.message || "Registration failed");
     }
   };
 

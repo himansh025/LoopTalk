@@ -10,8 +10,10 @@ const isAuthenticated = (req, res, next) => {
 
         const token = authHeader.split(" ")[1];
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        // console.log(decoded)
-        req.id = decoded.userId; // attach user id to request
+        console.log("d",decoded)
+        req.id = decoded.userId; 
+        // attach user id to request
+        console.log("object",req.id);
         next();
     } catch (error) {
         console.error(error);
