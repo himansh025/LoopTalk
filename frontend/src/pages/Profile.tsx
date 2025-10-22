@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../config/apiconfig";
 import { toast } from "react-toastify";
-import { da } from "zod/v4/locales";
 
 const Profile = () => {
   const [userData, setUserData] = useState<any>({});

@@ -1,5 +1,5 @@
 // OnlineUser.tsx - Responsive width for large screens
-import React, { use, useEffect, useId, useState } from "react";
+import React, {  useEffect, useId, useState } from "react";
 import {  initSocket,getSocket} from "../socket";
 import axiosInstance from "../config/apiconfig";
 import SearchBar from "./OnSearch";
