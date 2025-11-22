@@ -1,73 +1,66 @@
 // OnlineUser.tsx - Responsive width for large screens
-import React, {  useEffect, useId, useState } from "react";
-import {  initSocket,getSocket} from "../socket";
+import React, { useEffect, useState } from "react";
+import { initSocket, getSocket } from "../socket";
 import axiosInstance from "../config/apiconfig";
 import SearchBar from "./OnSearch";
 import Messages from "./Messages";
 import { useSelector } from "react-redux";
+import { MessageSquare } from "lucide-react";
+
 interface user2 {
-    id:string;
-    name:string;
-    avatar:string;
-    email:string;
-    username:string;
-    online:boolean;
-    gender:string
+  id: string;
+  name: string;
+  avatar: string;
+  email: string;
+  username: string;
+  online: boolean;
+  gender: string
 }
 
 const OnlineUser: React.FC = () => {
-  const [onlineUsers, setOnlineUsers] = useState<user2[]>([]);
-  const [allUsers, setAllUsers] = useState<[]>([]);
+  const onlineUserIds = useSelector((state: any) => state.onlineUsers.users);
+  const [allUsers, setAllUsers] = useState<user2[]>([]); // Typed correctly
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'online' | 'all'>('online');
-const {user}= useSelector((state:any)=>state.auth)
-const [openUserChat,setOpenUserChat]= useState(false);
-const [userData,setUserData]= useState({});
+  const { user } = useSelector((state: any) => state.auth)
+  const [openUserChat, setOpenUserChat] = useState(false);
+  const [userData, setUserData] = useState({});
 
 
-  useEffect(() => { 
-    
-     const fetchAllUsers = async () => {
-    try {
-      const { data } = await axiosInstance.get("/user/all");
-      // Filter out current user from all users
-      console.log(data)
-      console.log(user?.id)
-      const me=user?.id
-      const filteredUsers = data.filter((user: any) => user._id != me );
-      console.log(filteredUsers)
-      setAllUsers(filteredUsers);
-      setLoading(false);
-    } catch (error) {
-      console.error("Failed to fetch users:", error);
-      setLoading(false);
-    }
-  };
-    
-     const getFriends = async () => {
-    try {
-      const { data } = await axiosInstance.get("/friend/friends");
-      // Filter out current user from all users
-      console.log(data)
-      // const me=user?.id
-    
-      setLoading(false);
-    } catch (error) {
-      console.error("Failed to fetch users:", error);
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
 
-      fetchAllUsers();
+    const fetchAllUsers = async () => {
+      try {
+        const { data } = await axiosInstance.get("/user/all");
+        const me = user?.id
+        const filteredUsers = data.filter((user: any) => user._id != me);
+        setAllUsers(filteredUsers);
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
+        setLoading(false);
+      }
+    };
+
+    const getFriends = async () => {
+      try {
+        const { data } = await axiosInstance.get("/friend/friends");
+        console.log(data)
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchAllUsers();
     getFriends();
   }, []);
 
 
-  // friends
-
-  const handleSearch=async(query:string)=>{
-     try {
-      if(query){
+  const handleSearch = async (query: string) => {
+    try {
+      if (query) {
         const res = await axiosInstance.get(`/user/all?search=${query}`);
         setAllUsers(res.data);
 
@@ -78,33 +71,16 @@ const [userData,setUserData]= useState({});
   }
 
   useEffect(() => {
-    const socket= getSocket()||initSocket(user.id);
-    console.log("socket",socket);
-    if (!socket || allUsers.length === 0) return;
+    const socket = getSocket() || initSocket(user.id);
+    console.log("socket", socket);
+  }, [user]);
 
-    socket.on("getOnlineUsers", (onlineUserIds: string[]) => {
-      console.log("Online user IDs received:", onlineUserIds);
-      
-      // Filter out current user
-      const filteredOnlineIds = onlineUserIds.filter(id => id !== user?.id);
-      
-      // Find online users from allUsers array
-      console.log("filtered",filteredOnlineIds);
-      
-      console.log("allusers",allUsers)
-      const updatedOnlineUsers = allUsers.filter((user:any) =>{
-console.log(user);
-         return filteredOnlineIds.includes(user?._id)
-      } 
-      );
-      console.log(updatedOnlineUsers)
-      setOnlineUsers(updatedOnlineUsers);
+  const onlineUsers = React.useMemo(() => {
+    return allUsers.filter((u: any) => {
+      const uid = u._id || u.id;
+      return onlineUserIds.includes(uid) && uid !== user?.id;
     });
-
-    return () => {
-      socket.off("getOnlineUsers");
-    };
-  }, [allUsers, user]);
+  }, [allUsers, onlineUserIds, user?.id]);
 
   const handleUserClick = (userData: any) => {
     console.log("Start chat with:", userData);
@@ -112,28 +88,22 @@ console.log(user);
     setUserData(userData)
   };
 
-if(openUserChat){
-  return(
-   <Messages
-    userChat={userData}
-  />
-  )
-}
+  if (openUserChat) {
+    return (
+      <Messages
+        userChat={userData}
+      />
+    )
+  }
 
   if (loading) {
     return (
-      <div className="p-4 bg-white rounded-2xl shadow-md w-full max-w-sm lg:max-w-none lg:w-full">
+      <div className="p-6 w-full">
         <div className="animate-pulse">
-          <div className="h-6 bg-gray-300 rounded mb-4"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
-                <div className="flex-1">
-                  <div className="h-4 bg-gray-300 rounded mb-1"></div>
-                  <div className="h-3 bg-gray-300 rounded w-16"></div>
-                </div>
-              </div>
+          <div className="h-8 bg-slate-200 rounded w-48 mb-6"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+              <div key={i} className="bg-white p-4 rounded-xl border border-slate-200 h-32"></div>
             ))}
           </div>
         </div>
@@ -143,98 +113,91 @@ if(openUserChat){
 
   const displayUsers = activeTab === 'online' ? onlineUsers : allUsers;
   const isUserOnline = (userId: any) => {
-    console.log(useId);
-    return onlineUsers.some(user => (user?.id || user.id) === userId);
+    return onlineUsers.some(user => user == userId);
   };
+  console.log("isOnlineUser", isUserOnline)
 
 
   return (
-    <div className="p-4 bg-white rounded-2xl shadow-md w-full max-w-sm lg:max-w-none lg:w-full">
-      {/* Tab Headers */}
-     <div className="my-2">
-       <SearchBar onSearch={handleSearch}/>
-     </div>
-      <div className="flex mb-6 bg-gray-100 rounded-lg p-1 max-w-md mx-auto lg:mx-0">
-        <button
-          onClick={() => setActiveTab('online')}
-          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-            activeTab === 'online'
-              ? 'bg-white text-blue-600 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          Online ({onlineUsers.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('all')}
-          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-            activeTab === 'all'
-              ? 'bg-white text-blue-600 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
-        >
-          All Users ({allUsers.length})
-        </button>
+    <div className="p-6 w-full max-w-7xl mx-auto">
+      {/* Header & Tabs */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">People</h1>
+          <p className="text-slate-500">Connect with developers</p>
+        </div>
+
+        <div className="flex items-center gap-4 bg-slate-100 p-1 rounded-lg self-start">
+          <button
+            onClick={() => setActiveTab('online')}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'online'
+              ? 'bg-white text-indigo-600 shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+              }`}
+          >
+            Online ({onlineUsers.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('all')}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'all'
+              ? 'bg-white text-indigo-600 shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+              }`}
+          >
+            All Users ({allUsers.length})
+          </button>
+        </div>
       </div>
 
-      {/* Users Grid/List */}
+      <div className="mb-6">
+        <SearchBar onSearch={handleSearch} />
+      </div>
+
+      {/* Users Grid */}
       {displayUsers.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="text-gray-400 text-6xl mb-4">👥</div>
-          <p className="text-gray-500 text-lg">
-            {activeTab === 'online' ? 'No users online' : 'No users found'}
-          </p>
+        <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-slate-300">
+          <div className="text-slate-300 mb-4">
+            <MessageSquare size={48} className="mx-auto" />
+          </div>
+          <h3 className="text-lg font-medium text-slate-900">No users found</h3>
+          <p className="text-slate-500">Try adjusting your search or check back later.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {displayUsers.map((user: any) => {
             const userId = user._id || user.id;
             const userIsOnline = isUserOnline(userId);
-            
+
             return (
               <div
                 key={userId}
-                className="bg-gray-50 rounded-xl p-4 hover:bg-gray-100 transition cursor-pointer border border-transparent hover:border-gray-200 hover:shadow-md"
                 onClick={() => handleUserClick(user)}
+                className="group bg-white rounded-xl p-5 border border-slate-200 hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer flex flex-col items-center text-center relative overflow-hidden"
               >
-                <div className="flex flex-col items-center text-center">
-                  <div className="relative mb-3">
-                    <img
-                      src={user.profilePhoto || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName)}&background=0D8ABC&color=fff`}
-                      alt={user.fullName}
-                      className="w-16 h-16 rounded-full border-2 border-gray-200 object-cover"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName)}&background=0D8ABC&color=fff`;
-                      }}
-                    />
-                    {/* Online indicator */}
-                    {userIsOnline && (
-                      <span className="absolute bottom-0 right-0 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></span>
-                    )}
-                  </div>
-                  
-                  <div className="w-full">
-                    <p className="font-medium text-gray-900 mb-1 truncate">{user.fullName}</p>
-                    <p className={`text-sm mb-2 ${userIsOnline ? 'text-green-600' : 'text-gray-500'}`}>
-                      {userIsOnline ? 'Online' : 'Offline'}
-                    </p>
-                    {user.email && (
-                      <p className="text-xs text-gray-400 truncate mb-3">{user.email}</p>
-                    )}
-                    
-                    {/* Chat button */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleUserClick(user);
-                      }}
-                      className="w-full px-3 py-2 text-xs bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition font-medium"
-                    >
-                      Start Chat
-                    </button>
-                  </div>
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                <div className="relative mb-4">
+                  <img
+                    src={user.profilePhoto || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName)}&background=6366f1&color=fff`}
+                    alt={user.fullName}
+                    className="w-20 h-20 rounded-full object-cover border-4 border-slate-50 group-hover:scale-105 transition-transform"
+                  />
+                  {userIsOnline && (
+                    <span className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full shadow-sm"></span>
+                  )}
                 </div>
+
+                <div className="w-full min-w-0 mb-4">
+                  <h3 className="font-semibold text-slate-900 truncate text-lg">{user.fullName}</h3>
+                  <p className="text-sm text-slate-500 truncate">@{user.username}</p>
+                </div>
+
+                <button
+                  className="w-full mt-auto py-2.5 px-4 bg-slate-50 text-slate-700 font-medium rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-colors flex items-center justify-center gap-2"
+                >
+                  <MessageSquare size={16} />
+                  <span>Message</span>
+                </button>
               </div>
             );
           })}

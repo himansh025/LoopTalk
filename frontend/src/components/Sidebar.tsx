@@ -1,15 +1,15 @@
-import { Link, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../hooks/hooks";
 import axiosInstance from "../config/apiconfig";
 import { logout } from "../store/authSlicer";
-import { GlobeIcon, LogOut, MessageCircle, UserRoundCogIcon } from "lucide-react";
+import { GlobeIcon, LogOut, MessageSquare, User, Settings, Code2 } from "lucide-react";
 import { MdLogin } from "react-icons/md";
 
 interface LogoutResponse {
   message: string;
 }
 interface SidebarProps {
-  closeSidebar?: () => void; // optional for mobile
+  closeSidebar?: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
@@ -28,38 +28,77 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
     }
   };
 
-  return (
-    <div className="bg-blue-950 text-white p-4 flex flex-col h-full w-full">
-      <span className="text-lg font-bold mb-4">Chit-Chat</span>
+  const navItems = [
+    { path: "/", icon: MessageSquare, label: "Chats" },
+    { path: "/online", icon: GlobeIcon, label: "Online Users" },
+    { path: "/profile", icon: User, label: "Profile" },
+  ];
 
-      <div className="flex flex-col text-lg gap-3">
-        <Link to="/" onClick={closeSidebar} className="flex gap-3 items-center">
-          <MessageCircle /> Chats
-        </Link>
-        <Link to="/profile" onClick={closeSidebar} className="flex gap-3 items-center">
-          <UserRoundCogIcon /> Profile
-        </Link>
-           <Link to="/online" onClick={closeSidebar} className="flex gap-3 items-center">
-          <GlobeIcon /> Online
-        </Link>
-        
+  return (
+    <div className="bg-slate-900 text-slate-300 flex flex-col h-full w-full border-r border-slate-800">
+      {/* Brand */}
+      <div className="p-6 flex items-center gap-3 text-white">
+        <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+          <Code2 size={20} />
+        </div>
+        <span className="text-xl font-bold tracking-tight">DevChat</span>
       </div>
 
-      {user ? (
-        <div className="mt-auto">
+      {/* Navigation */}
+      <nav className="flex-1 px-3 py-4 space-y-1">
+        {navItems.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            onClick={closeSidebar}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${isActive
+                ? "bg-indigo-600 text-white shadow-lg shadow-indigo-900/20"
+                : "hover:bg-slate-800 hover:text-white"
+              }`
+            }
+          >
+            <item.icon size={20} />
+            <span className="font-medium">{item.label}</span>
+          </NavLink>
+        ))}
+      </nav>
+
+      {/* Footer / User Section */}
+      <div className="p-4 border-t border-slate-800">
+        {user ? (
+          <div className="flex items-center gap-3 mb-4 px-2">
+            <img
+              src={user.profilePhoto || `https://ui-avatars.com/api/?name=${user.fullName}`}
+              alt="Profile"
+              className="w-9 h-9 rounded-full border border-slate-600"
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-white truncate">{user.fullName}</p>
+              <p className="text-xs text-slate-500 truncate">@{user.username}</p>
+            </div>
+          </div>
+        ) : null}
+
+        {user ? (
           <button
             onClick={logoutHandler}
-            className="w-full bg-red-600 hover:bg-red-700 py-2 rounded"
+            className="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-red-600/90 hover:text-white text-slate-400 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium"
           >
-            <LogOut className="inline mr-2" /> Logout
+            <LogOut size={18} />
+            <span>Sign Out</span>
           </button>
-        </div>
-      ):
-      <>
-       <Link to="/login" onClick={closeSidebar} className="flex gap-3 text-lg h-8 mt-2 items-center">
-          <MdLogin /> Login
-        </Link>
-      </>}
+        ) : (
+          <NavLink
+            to="/login"
+            onClick={closeSidebar}
+            className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg transition-all duration-200 text-sm font-medium"
+          >
+            <MdLogin size={18} />
+            <span>Sign In</span>
+          </NavLink>
+        )}
+      </div>
     </div>
   );
 };

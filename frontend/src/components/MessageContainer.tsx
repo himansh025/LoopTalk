@@ -4,7 +4,7 @@ import axiosInstance from "../config/apiconfig";
 import { toast } from "react-toastify";
 import Messages from "./Messages";
 import { ArrowLeftCircle } from "lucide-react";
-import { initSocket,getSocket } from "../socket"; // Import socket
+import { initSocket, getSocket } from "../socket"; // Import socket
 import { setChats } from "../store/chatSlicer";
 import { useSelector } from "react-redux";
 
@@ -13,16 +13,16 @@ interface Props {
 }
 
 export default function MessageContainer({ currentUserId }: Props) {
-    const { user } = useSelector((state:any) => state.auth);
+  const { user } = useSelector((state: any) => state.auth);
   const [allChat, setAllChat] = useState<any[]>([]);
   const [userChatId, setUserChatId] = useState("");
   const [loading, setLoading] = useState(true);
-  const [selectedChat,setSelectedChat]= useState<any[]>([])
- 
+  const [selectedChat, setSelectedChat] = useState<any[]>([])
+
   const getAllChat = async () => {
     try {
       const { data } = await axiosInstance.get("/message/allChats");
-      
+
       const formattedChat = data.map((chat: any) => {
         const otherUser = chat.participants.find(
           (p: any) => p._id !== currentUserId
@@ -35,11 +35,11 @@ export default function MessageContainer({ currentUserId }: Props) {
           otherUser: otherUser,
           lastMessage: chat.messages?.[0]
             ? {
-                senderId: chat.messages[0].senderId,
-                senderName: otherUser?.fullName || "Unknown",
-                senderProfile: otherUser?.profilePhoto || "",
-                text: chat.messages[0].message,
-              }
+              senderId: chat.messages[0].senderId,
+              senderName: otherUser?.fullName || "Unknown",
+              senderProfile: otherUser?.profilePhoto || "",
+              text: chat.messages[0].message,
+            }
             : null,
           unreadCount: 0,
         };
@@ -55,14 +55,15 @@ export default function MessageContainer({ currentUserId }: Props) {
   };
 
   useEffect(() => {
-     let socket:any
-    if(user){
-       socket=getSocket()||initSocket(user.id)
+    let socket: any
+    if (user) {
+      socket = getSocket() || initSocket(user.id)
       // console.log(user);
 
     }
     if (socket) {
-        getAllChat(); }
+      getAllChat();
+    }
 
     return () => {
       if (socket) {
@@ -108,7 +109,7 @@ export default function MessageContainer({ currentUserId }: Props) {
             </button>
             <span>Back to Chats</span>
           </div>
-          
+
           <Messages
             userChat={selectedChat}
           />
