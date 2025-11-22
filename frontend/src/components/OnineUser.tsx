@@ -1,73 +1,64 @@
 // OnlineUser.tsx - Responsive width for large screens
-import React, {  useEffect, useId, useState } from "react";
-import {  initSocket,getSocket} from "../socket";
+import React, { useEffect, useState } from "react";
+import { initSocket, getSocket } from "../socket";
 import axiosInstance from "../config/apiconfig";
 import SearchBar from "./OnSearch";
 import Messages from "./Messages";
 import { useSelector } from "react-redux";
 interface user2 {
-    id:string;
-    name:string;
-    avatar:string;
-    email:string;
-    username:string;
-    online:boolean;
-    gender:string
+  id: string;
+  name: string;
+  avatar: string;
+  email: string;
+  username: string;
+  online: boolean;
+  gender: string
 }
 
 const OnlineUser: React.FC = () => {
-  const [onlineUsers, setOnlineUsers] = useState<user2[]>([]);
-  const [allUsers, setAllUsers] = useState<[]>([]);
+  const onlineUserIds = useSelector((state: any) => state.onlineUsers.users);
+  const [allUsers, setAllUsers] = useState<user2[]>([]); // Typed correctly
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'online' | 'all'>('online');
-const {user}= useSelector((state:any)=>state.auth)
-const [openUserChat,setOpenUserChat]= useState(false);
-const [userData,setUserData]= useState({});
+  const { user } = useSelector((state: any) => state.auth)
+  const [openUserChat, setOpenUserChat] = useState(false);
+  const [userData, setUserData] = useState({});
 
 
-  useEffect(() => { 
-    
-     const fetchAllUsers = async () => {
-    try {
-      const { data } = await axiosInstance.get("/user/all");
-      // Filter out current user from all users
-      console.log(data)
-      console.log(user?.id)
-      const me=user?.id
-      const filteredUsers = data.filter((user: any) => user._id != me );
-      console.log(filteredUsers)
-      setAllUsers(filteredUsers);
-      setLoading(false);
-    } catch (error) {
-      console.error("Failed to fetch users:", error);
-      setLoading(false);
-    }
-  };
-    
-     const getFriends = async () => {
-    try {
-      const { data } = await axiosInstance.get("/friend/friends");
-      // Filter out current user from all users
-      console.log(data)
-      // const me=user?.id
-    
-      setLoading(false);
-    } catch (error) {
-      console.error("Failed to fetch users:", error);
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
 
-      fetchAllUsers();
+    const fetchAllUsers = async () => {
+      try {
+        const { data } = await axiosInstance.get("/user/all");
+        const me = user?.id
+        const filteredUsers = data.filter((user: any) => user._id != me);
+        setAllUsers(filteredUsers);
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
+        setLoading(false);
+      }
+    };
+
+    const getFriends = async () => {
+      try {
+        const { data } = await axiosInstance.get("/friend/friends");
+        console.log(data)
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch users:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchAllUsers();
     getFriends();
   }, []);
 
 
-  // friends
-
-  const handleSearch=async(query:string)=>{
-     try {
-      if(query){
+  const handleSearch = async (query: string) => {
+    try {
+      if (query) {
         const res = await axiosInstance.get(`/user/all?search=${query}`);
         setAllUsers(res.data);
 
@@ -78,33 +69,16 @@ const [userData,setUserData]= useState({});
   }
 
   useEffect(() => {
-    const socket= getSocket()||initSocket(user.id);
-    console.log("socket",socket);
-    if (!socket || allUsers.length === 0) return;
+    const socket = getSocket() || initSocket(user.id);
+    console.log("socket", socket);
+  }, [user]);
 
-    socket.on("getOnlineUsers", (onlineUserIds: string[]) => {
-      console.log("Online user IDs received:", onlineUserIds);
-      
-      // Filter out current user
-      const filteredOnlineIds = onlineUserIds.filter(id => id !== user?.id);
-      
-      // Find online users from allUsers array
-      console.log("filtered",filteredOnlineIds);
-      
-      console.log("allusers",allUsers)
-      const updatedOnlineUsers = allUsers.filter((user:any) =>{
-console.log(user);
-         return filteredOnlineIds.includes(user?._id)
-      } 
-      );
-      console.log(updatedOnlineUsers)
-      setOnlineUsers(updatedOnlineUsers);
+  const onlineUsers = React.useMemo(() => {
+    return allUsers.filter((u: any) => {
+      const uid = u._id || u.id;
+      return onlineUserIds.includes(uid) && uid !== user?.id;
     });
-
-    return () => {
-      socket.off("getOnlineUsers");
-    };
-  }, [allUsers, user]);
+  }, [allUsers, onlineUserIds, user?.id]);
 
   const handleUserClick = (userData: any) => {
     console.log("Start chat with:", userData);
@@ -112,13 +86,13 @@ console.log(user);
     setUserData(userData)
   };
 
-if(openUserChat){
-  return(
-   <Messages
-    userChat={userData}
-  />
-  )
-}
+  if (openUserChat) {
+    return (
+      <Messages
+        userChat={userData}
+      />
+    )
+  }
 
   if (loading) {
     return (
@@ -143,35 +117,33 @@ if(openUserChat){
 
   const displayUsers = activeTab === 'online' ? onlineUsers : allUsers;
   const isUserOnline = (userId: any) => {
-    console.log(useId);
-    return onlineUsers.some(user => (user?.id || user.id) === userId);
+    return onlineUsers.some(user => user == userId);
   };
+  console.log("isOnlineUser",isUserOnline)
 
 
   return (
     <div className="p-4 bg-white rounded-2xl shadow-md w-full max-w-sm lg:max-w-none lg:w-full">
       {/* Tab Headers */}
-     <div className="my-2">
-       <SearchBar onSearch={handleSearch}/>
-     </div>
+      <div className="my-2">
+        <SearchBar onSearch={handleSearch} />
+      </div>
       <div className="flex mb-6 bg-gray-100 rounded-lg p-1 max-w-md mx-auto lg:mx-0">
         <button
           onClick={() => setActiveTab('online')}
-          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-            activeTab === 'online'
-              ? 'bg-white text-blue-600 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
+          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${activeTab === 'online'
+            ? 'bg-white text-blue-600 shadow-sm'
+            : 'text-gray-600 hover:text-gray-900'
+            }`}
         >
           Online ({onlineUsers.length})
         </button>
         <button
           onClick={() => setActiveTab('all')}
-          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-            activeTab === 'all'
-              ? 'bg-white text-blue-600 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
+          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${activeTab === 'all'
+            ? 'bg-white text-blue-600 shadow-sm'
+            : 'text-gray-600 hover:text-gray-900'
+            }`}
         >
           All Users ({allUsers.length})
         </button>
@@ -190,7 +162,8 @@ if(openUserChat){
           {displayUsers.map((user: any) => {
             const userId = user._id || user.id;
             const userIsOnline = isUserOnline(userId);
-            
+            console.log("userIsOnline", userIsOnline)
+
             return (
               <div
                 key={userId}
@@ -213,8 +186,8 @@ if(openUserChat){
                       <span className="absolute bottom-0 right-0 w-5 h-5 bg-green-500 border-2 border-white rounded-full"></span>
                     )}
                   </div>
-                  
-                  <div className="w-full">
+
+                  <div className="w-full min-w-0">
                     <p className="font-medium text-gray-900 mb-1 truncate">{user.fullName}</p>
                     <p className={`text-sm mb-2 ${userIsOnline ? 'text-green-600' : 'text-gray-500'}`}>
                       {userIsOnline ? 'Online' : 'Offline'}
@@ -222,7 +195,7 @@ if(openUserChat){
                     {user.email && (
                       <p className="text-xs text-gray-400 truncate mb-3">{user.email}</p>
                     )}
-                    
+
                     {/* Chat button */}
                     <button
                       onClick={(e) => {

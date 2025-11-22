@@ -1,5 +1,5 @@
 import express from "express";
-import dotenv from "dotenv"; 
+import dotenv from "dotenv";
 import connectDB from "./config/database.js";
 import userRoute from "./routes/userRoute.js";
 import messageRoute from "./routes/messageRoute.js";
@@ -9,28 +9,28 @@ import cors from "cors";
 import { app,server } from "./socket/socket.js";
 dotenv.config({});
 
- 
+
 const PORT = process.env.PORT || 5000;
 
 // middleware
 app.use(express.urlencoded({extended:true}));
-app.use(express.json()); 
+app.use(express.json());
 app.use(cookieParser());
-const corsOption={
-    origin:['http://localhost:5173',`${process.env.CLIENT}`],
-    credentials:true
+const corsOption = {
+    origin: ['http://localhost:5173', process.env.CLIENT],
+    credentials: true
 };
-app.use(cors("*"));
+app.use(cors(corsOption));
 
 
 
 // routes
-app.use("/api/v1/user",userRoute); 
-app.use("/api/v1/message",messageRoute);
-app.use("/api/v1/friend",friendRoute);
- 
+app.use("/api/v1/user", userRoute);
+app.use("/api/v1/message", messageRoute);
+app.use("/api/v1/friend", friendRoute);
 
-server.listen(PORT, ()=>{
+
+server.listen(PORT, () => {
     connectDB();
     console.log(`Server listen at port ${PORT}`);
 });

@@ -6,7 +6,7 @@ import { useAppSelector } from "../hooks/hooks";
 import { getSocket, initSocket } from "../socket";
 
 interface MessagesProps {
-  userChat?: any; 
+  userChat?: any;
 }
 
 const Messages: React.FC<MessagesProps> = ({ userChat }) => {
@@ -100,18 +100,16 @@ const Messages: React.FC<MessagesProps> = ({ userChat }) => {
                 {!mine && <div className="w-8 h-8 rounded-full bg-gray-300 shrink-0" />}
                 <div className="max-w-[80%]">
                   <div
-                    className={`px-4 py-2 rounded-2xl break-words leading-relaxed shadow-sm ${
-                      mine
-                        ? "bg-blue-600 text-white rounded-br-none"
-                        : "bg-white text-gray-800 border border-gray-200 rounded-bl-none"
-                    }`}
+                    className={`px-4 py-2 rounded-2xl break-words leading-relaxed shadow-sm ${mine
+                      ? "bg-blue-600 text-white rounded-br-none"
+                      : "bg-white text-gray-800 border border-gray-200 rounded-bl-none"
+                      }`}
                   >
                     {msg.message}
                   </div>
                   <div
-                    className={`mt-1 text-[11px] ${
-                      mine ? "text-right text-slate-100/80" : "text-left text-gray-400"
-                    }`}
+                    className={`mt-1 text-[11px] ${mine ? "text-right text-slate-100/80" : "text-left text-gray-400"
+                      }`}
                   >
                     {formatTime(msg.createdAt)}
                   </div>
