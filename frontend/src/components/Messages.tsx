@@ -113,7 +113,7 @@ const Messages: React.FC<MessagesProps> = ({ userChat }) => {
         ) : (
           currentMessages.map((msg: any, idx) => {
             const mine = msg.senderId === user?._id;
-            const isLast = idx === currentMessages.length - 1;
+            // const isLast = idx === currentMessages.length - 1;
 
             return (
               <div key={msg._id || idx} className={`flex gap-3 ${mine ? "justify-end" : "justify-start"}`}>

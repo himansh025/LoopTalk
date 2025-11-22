@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../hooks/hooks";
 import axiosInstance from "../config/apiconfig";
 import { logout } from "../store/authSlicer";
-import { GlobeIcon, LogOut, MessageSquare, User, Settings, Code2 } from "lucide-react";
+import { GlobeIcon, LogOut, MessageSquare, User,  Code2 } from "lucide-react";
 import { MdLogin } from "react-icons/md";
 
 interface LogoutResponse {

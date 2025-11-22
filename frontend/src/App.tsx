@@ -8,7 +8,7 @@ import LogoutButton from "./components/Logout";
 import Layout from "./components/Layout";
 import Profile from "./pages/Profile";
 import OnlineUser from "./components/OnineUser";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { initSocket, closeSocket } from "./socket";
 import { toast, ToastContainer } from "react-toastify";
 import axiosInstance from "./config/apiconfig";
@@ -16,7 +16,7 @@ import { login } from "./store/authSlicer";
 
 function App() {
     const { user } = useAppSelector((state) => state.auth);
-    const [loading, setLoading] = useState(false)
+    // const [loading, setLoading] = useState(false)
 
     useEffect(() => {
         if (user?.id) {
@@ -37,7 +37,7 @@ function App() {
         if (token && !user) {
             const getUserProfile = async () => {
                 try {
-                    setLoading(true)
+                    // setLoading(true)
                     const { data } = await axiosInstance.get("/user/me");
                     console.log(data);
                     login(data);
@@ -45,7 +45,7 @@ function App() {
                     console.error(" failed:", error?.message);
                     toast.error(error.message)
                 } finally {
-                    setLoading(false)
+                    // setLoading(false)
                 }
             };
             getUserProfile()
