@@ -23,6 +23,7 @@ const corsOption = {
 app.use(cors(corsOption));
 
 
+connectDB();
 
 // routes
 app.use("/api/v1/user", userRoute);
@@ -31,7 +32,6 @@ app.use("/api/v1/friend", friendRoute);
 
 
 server.listen(PORT, () => {
-    connectDB();
     console.log(`Server listen at port ${PORT}`);
 });
 
