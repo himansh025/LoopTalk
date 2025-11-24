@@ -3,7 +3,7 @@ import ChatList from "./ChatList";
 import axiosInstance from "../config/apiconfig";
 import { toast } from "react-toastify";
 import Messages from "./Messages";
-import { ArrowLeft, CloudCog } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { initSocket, getSocket } from "../socket";
 import { setChats } from "../store/chatSlicer";
 import { useSelector } from "react-redux";

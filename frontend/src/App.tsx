@@ -1,4 +1,4 @@
-import { Routes, Route, BrowserRouter } from "react-router-dom";
+import { Routes, Route} from "react-router-dom";
 import { useAppSelector } from "./hooks/hooks";
 import Login from "./components/Login";
 import Signup from "./components/Signup";

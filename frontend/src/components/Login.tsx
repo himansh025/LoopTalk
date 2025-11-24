@@ -6,7 +6,7 @@ import axiosInstance from "../config/apiconfig";
 import { useState } from "react";
 import { z } from "zod";
 import { login } from "../store/authSlicer";
-import { CloudCog, Lock, LogIn, Mail } from "lucide-react";
+import {   Lock, LogIn, Mail } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
