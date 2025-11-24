@@ -2,8 +2,9 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../hooks/hooks";
 import axiosInstance from "../config/apiconfig";
 import { logout } from "../store/authSlicer";
-import { GlobeIcon, LogOut, MessageSquare, User,  Code2 } from "lucide-react";
+import { GlobeIcon, LogOut, MessageSquare, User, Code2 } from "lucide-react";
 import { MdLogin } from "react-icons/md";
+import { Button } from "./ui/Button";
 
 interface LogoutResponse {
   message: string;
@@ -20,8 +21,9 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
   const logoutHandler = async () => {
     try {
       await axiosInstance.post<LogoutResponse>(`/user/logout`);
-      navigate("/login");
+      localStorage.removeItem("token");
       dispatch(logout());
+      navigate("/login");
       if (closeSidebar) closeSidebar();
     } catch (error) {
       console.error(error);
@@ -35,26 +37,26 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
   ];
 
   return (
-    <div className="bg-slate-900 text-slate-300 flex flex-col h-full w-full border-r border-slate-800">
+    <div className="flex h-full w-full flex-col border-r border-white/20 bg-slate-900/95 text-slate-300 backdrop-blur-xl">
       {/* Brand */}
-      <div className="p-6 flex items-center gap-3 text-white">
-        <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-          <Code2 size={20} />
+      <div className=" hidden md:flex items-center gap-3 p-6 text-white">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 shadow-lg shadow-indigo-500/30">
+          <Code2 size={24} />
         </div>
-        <span className="text-xl font-bold tracking-tight">DevChat</span>
+        <span className="text-xl font-bold tracking-tight">LoopTalk</span>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-1">
+      <nav className="flex-1 space-y-1 px-3 py-4">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
             onClick={closeSidebar}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${isActive
+              `group flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 ${isActive
                 ? "bg-indigo-600 text-white shadow-lg shadow-indigo-900/20"
-                : "hover:bg-slate-800 hover:text-white"
+                : "hover:bg-white/10 hover:text-white"
               }`
             }
           >
@@ -65,37 +67,41 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
       </nav>
 
       {/* Footer / User Section */}
-      <div className="p-4 border-t border-slate-800">
+      <div className="border-t border-white/10 p-4">
         {user ? (
-          <div className="flex items-center gap-3 mb-4 px-2">
+          <div className="mb-4 flex items-center gap-3 px-2">
             <img
-              src={user.profilePhoto || `https://ui-avatars.com/api/?name=${user.fullName}`}
+              src={
+                user.profilePhoto ||
+                `https://ui-avatars.com/api/?name=${user.fullName}`
+              }
               alt="Profile"
-              className="w-9 h-9 rounded-full border border-slate-600"
+              className="h-10 w-10 rounded-full border-2 border-indigo-500/30"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{user.fullName}</p>
-              <p className="text-xs text-slate-500 truncate">@{user.username}</p>
+              <p className="truncate text-sm font-medium text-white">
+                {user.fullName.toUpperCase()}
+              </p>
+              <p className="truncate text-xs text-slate-500">@{user.username}</p>
             </div>
           </div>
         ) : null}
 
         {user ? (
-          <button
+          <Button
+            variant="danger"
+            className="w-full justify-start gap-2 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white"
             onClick={logoutHandler}
-            className="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-red-600/90 hover:text-white text-slate-400 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium"
           >
             <LogOut size={18} />
             <span>Sign Out</span>
-          </button>
+          </Button>
         ) : (
-          <NavLink
-            to="/login"
-            onClick={closeSidebar}
-            className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg transition-all duration-200 text-sm font-medium"
-          >
-            <MdLogin size={18} />
-            <span>Sign In</span>
+          <NavLink to="/login" onClick={closeSidebar}>
+            <Button className="w-full gap-2">
+              <MdLogin size={18} />
+              <span>Sign In</span>
+            </Button>
           </NavLink>
         )}
       </div>

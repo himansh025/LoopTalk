@@ -7,15 +7,19 @@ import HomePage from "./pages/HomePage";
 import LogoutButton from "./components/Logout";
 import Layout from "./components/Layout";
 import Profile from "./pages/Profile";
-import OnlineUser from "./components/OnineUser";
+import OnlineUser from "./components/OnlineUser";
 import { useEffect } from "react";
 import { initSocket, closeSocket } from "./socket";
 import { toast, ToastContainer } from "react-toastify";
 import axiosInstance from "./config/apiconfig";
 import { login } from "./store/authSlicer";
+import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 
 function App() {
     const { user } = useAppSelector((state) => state.auth);
+    const navigate = useNavigate()
+    const dispatch = useDispatch()
     // const [loading, setLoading] = useState(false)
 
     useEffect(() => {
@@ -32,33 +36,34 @@ function App() {
         }
     }, [user?.id]);
 
-    const token = sessionStorage.getItem("token")
+    const token = localStorage.getItem("token")
     useEffect(() => {
+        if(token && !user){
+             navigate("/")
+        }
         if (token && !user) {
             const getUserProfile = async () => {
                 try {
-                    // setLoading(true)
-                    const { data } = await axiosInstance.get("/user/me");
-                    console.log(data);
-                    login(data);
+                    const data = await axiosInstance.get("/user/me");
+                    console.log(data.data);
+                    dispatch(login({ user: data.data }));
                 } catch (error: any) {
                     console.error(" failed:", error?.message);
                     toast.error(error.message)
                 } finally {
-                    // setLoading(false)
                 }
             };
             getUserProfile()
         }
     }, [token]);
     return (
-        <BrowserRouter>
+   
             <div>
 
                 <Routes>
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Signup />} />
                     <Route path="/" element={<Layout />}>
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/register" element={<Signup />} />
 
                         {/* authenticated routes */}
                         <Route element={<Authenticated />}>
@@ -71,7 +76,7 @@ function App() {
                 </Routes>
                 <ToastContainer />
             </div>
-        </BrowserRouter>
+    
     );
 }
 

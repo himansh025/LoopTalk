@@ -62,21 +62,13 @@ export const login = async (req, res) => {
             userId: user._id
         };
 
-        const token = await jwt.sign(tokenData, process.env.JWT_SECRET || "derdvfbgedvb34we3423ewveqg4vbvrrtgf", { expiresIn: '1d' });
+        const token = await jwt.sign(tokenData, process.env.JWT_SECRET
+            //  || "derdvfbgedvb34we3423ewveqg4vbvrrtgf"
+             , { expiresIn: '1d' });
         console.log(token)
 
-        return res.status(200).cookie("token", token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite: 'strict' }).json({
-            _id: user._id,
-            username: user.username,
-            email: user.email,
-            gender: user.gender,
-            fullName: user.fullName,
-            profilePhoto: user.profilePhoto,
-            token: {
-                userToken: token
-            }
-        });
-
+        return res.status(200).cookie("token", token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite: 'strict' }).json({ token: token }
+        );
     } catch (error) {
         console.log(error);
     }

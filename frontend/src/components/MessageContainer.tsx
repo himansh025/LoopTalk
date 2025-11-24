@@ -3,10 +3,11 @@ import ChatList from "./ChatList";
 import axiosInstance from "../config/apiconfig";
 import { toast } from "react-toastify";
 import Messages from "./Messages";
-import { ArrowLeftCircle } from "lucide-react";
-import { initSocket, getSocket } from "../socket"; // Import socket
+import { ArrowLeft, CloudCog } from "lucide-react";
+import { initSocket, getSocket } from "../socket";
 import { setChats } from "../store/chatSlicer";
 import { useSelector } from "react-redux";
+import { Button } from "./ui/Button";
 
 interface Props {
   currentUserId: string;
@@ -17,12 +18,12 @@ export default function MessageContainer({ currentUserId }: Props) {
   const [allChat, setAllChat] = useState<any[]>([]);
   const [userChatId, setUserChatId] = useState("");
   const [loading, setLoading] = useState(true);
-  const [selectedChat, setSelectedChat] = useState<any[]>([])
-
+  const [selectedChat, setSelectedChat] = useState<any[]>([]);
+      console.log("user",user)
   const getAllChat = async () => {
     try {
       const { data } = await axiosInstance.get("/message/allChats");
-
+      console.log("fck",data)
       const formattedChat = data.map((chat: any) => {
         const otherUser = chat.participants.find(
           (p: any) => p._id !== currentUserId
@@ -39,6 +40,7 @@ export default function MessageContainer({ currentUserId }: Props) {
               senderName: otherUser?.fullName || "Unknown",
               senderProfile: otherUser?.profilePhoto || "",
               text: chat.messages[0].message,
+              timestamp: chat.messages[0].createdAt,
             }
             : null,
           unreadCount: 0,
@@ -46,7 +48,7 @@ export default function MessageContainer({ currentUserId }: Props) {
       });
 
       setAllChat(formattedChat);
-      setChats(formattedChat)
+      setChats(formattedChat);
       setLoading(false);
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Fetching chats failed");
@@ -55,11 +57,10 @@ export default function MessageContainer({ currentUserId }: Props) {
   };
 
   useEffect(() => {
-    let socket: any
+    let socket: any;
     if (user) {
-      socket = getSocket() || initSocket(user.id)
-      // console.log(user);
-
+      socket = getSocket() || initSocket(user._id);
+            console.log("scd",socket)
     }
     if (socket) {
       getAllChat();
@@ -74,10 +75,9 @@ export default function MessageContainer({ currentUserId }: Props) {
 
   const handleChatClick = (id: string) => {
     setUserChatId(id);
-    const selectedChat = allChat.find(chat => chat.id === id);
-    // console.log(selectedChat,"vdfv")
+    const selectedChat = allChat.find((chat) => chat.id === id);
     if (selectedChat?.otherUser) {
-      setSelectedChat(selectedChat?.otherUser)
+      setSelectedChat(selectedChat?.otherUser);
     }
   };
 
@@ -85,34 +85,53 @@ export default function MessageContainer({ currentUserId }: Props) {
     setUserChatId("");
   };
 
-
   if (loading) {
     return (
-      <div className="h-screen flex justify-center items-center">
-        <div className="animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+      <div className="flex h-screen items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent"></div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 overflow-hidden bg-gray-50">
+    <div className="flex h-full flex-1 overflow-hidden bg-slate-50/50">
       {userChatId === "" ? (
         <ChatList chats={allChat} onChatClick={handleChatClick} />
       ) : (
-        <div className="h-full flex flex-col">
-          <div className="flex items-center p-4 bg-white border-b">
-            <button
-              className="mr-4 p-2 rounded-full hover:bg-gray-200"
+        <div className="flex h-full w-full flex-col">
+          <div className="flex items-center gap-4 border-b border-slate-200 bg-white/80 p-4 backdrop-blur-md">
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={handleBack}
+              className="gap-2"
             >
-              <ArrowLeftCircle />Back
-            </button>
-            <span>Back to Chats</span>
+              <ArrowLeft size={20} />
+              Back
+            </Button>
+            <div className="flex items-center gap-3">
+              <img
+                src={
+                  (selectedChat as any)?.profilePhoto ||
+                  `https://ui-avatars.com/api/?name=${(selectedChat as any)?.fullName}`
+                }
+                alt="Profile"
+                className="h-10 w-10 rounded-full border border-slate-200"
+              />
+              <div>
+                <h3 className="font-semibold text-slate-900">
+                  {(selectedChat as any)?.fullName}
+                </h3>
+                <p className="text-xs text-slate-500">
+                  @{(selectedChat as any)?.username}
+                </p>
+              </div>
+            </div>
           </div>
 
-          <Messages
-            userChat={selectedChat}
-          />
+          <div className="flex-1 overflow-hidden">
+            <Messages userChat={selectedChat} />
+          </div>
         </div>
       )}
     </div>

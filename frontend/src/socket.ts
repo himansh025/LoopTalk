@@ -1,6 +1,7 @@
 // src/socket.ts
 import { io, Socket } from "socket.io-client";
 import { initSocketListeners } from "./socketListeners"; // <-- ADD THIS
+import { CloudCog } from "lucide-react";
 
 // const apiUrl: string = import.meta.env.VITE_API_URL||"http://localhost:5000";
 const socketurl: string = import.meta.env.VITE_SOCKET_API_URL||"http://localhost:5000";
@@ -8,6 +9,8 @@ const socketurl: string = import.meta.env.VITE_SOCKET_API_URL||"http://localhost
 let socket: Socket | null = null;
 
 export const initSocket = (userId: string) => {
+          console.log("fck")
+          console.log("socket",userId)
     if (socket) return socket;
 
     socket = io(socketurl, {
@@ -30,7 +33,6 @@ export const initSocket = (userId: string) => {
 };
 
 export const getSocket = () => socket;
-
 export const closeSocket = () => {
     if (socket) {
         socket.disconnect();

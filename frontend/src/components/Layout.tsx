@@ -5,16 +5,13 @@ import Navbar from "./Navbar";
 function Layout() {
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">
-      {/* Desktop Sidebar */}
       <aside className="hidden md:flex w-72 flex-col h-full shrink-0">
         <Sidebar />
       </aside>
 
       <div className="flex-1 flex flex-col h-full relative min-w-0">
-        {/* Mobile Navbar */}
         <Navbar />
 
-        {/* Page Content */}
         <main className="flex-1 overflow-hidden flex flex-col mt-14 md:mt-0">
           <Outlet />
         </main>

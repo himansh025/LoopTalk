@@ -1,12 +1,16 @@
 import React, { useState } from "react";
 import { Send, Paperclip, Image as ImageIcon, Smile } from "lucide-react";
+import { Button } from "./ui/Button";
 
 interface Props {
   onSend: (text: string) => void;
   placeholder?: string;
 }
 
-export default function MessageInput({ onSend, placeholder = "Type a message..." }: Props) {
+export default function MessageInput({
+  onSend,
+  placeholder = "Type a message...",
+}: Props) {
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
 
@@ -21,25 +25,32 @@ export default function MessageInput({ onSend, placeholder = "Type a message..."
   };
 
   return (
-    <form
-      onSubmit={handleSend}
-      className="flex items-center gap-2"
-    >
+    <form onSubmit={handleSend} className="flex items-center gap-2">
       <div className="flex gap-1 text-slate-400">
-        <button type="button" className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="rounded-full p-2"
+        >
           <Paperclip size={20} />
-        </button>
-        <button type="button" className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="rounded-full p-2"
+        >
           <ImageIcon size={20} />
-        </button>
+        </Button>
       </div>
 
-      <div className="flex-1 relative">
+      <div className="relative flex-1">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder={placeholder}
-          className="w-full bg-slate-100 border-none rounded-full px-4 py-3 focus:ring-2 focus:ring-indigo-500/20 focus:bg-white transition-all text-slate-800 placeholder:text-slate-400 outline-none"
+          className="w-full rounded-full border border-slate-200 bg-slate-50 px-4 py-3 text-slate-800 placeholder:text-slate-400 transition-all focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
           disabled={sending}
         />
         <button
@@ -50,18 +61,14 @@ export default function MessageInput({ onSend, placeholder = "Type a message..."
         </button>
       </div>
 
-      <button
+      <Button
         type="submit"
         disabled={sending || !input.trim()}
-        className="relative p-3 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 disabled:opacity-50 disabled:hover:bg-indigo-600 transition-all shadow-sm hover:shadow-md"
+        className="rounded-full p-3"
+        isLoading={sending}
       >
-        <Send size={20} className={sending ? "opacity-0" : "opacity-100"} />
-        {sending && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-          </div>
-        )}
-      </button>
+        {!sending && <Send size={20} />}
+      </Button>
     </form>
   );
 }
