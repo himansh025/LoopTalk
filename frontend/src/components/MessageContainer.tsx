@@ -3,26 +3,27 @@ import ChatList from "./ChatList";
 import axiosInstance from "../config/apiconfig";
 import { toast } from "react-toastify";
 import Messages from "./Messages";
-import { ArrowLeftCircle } from "lucide-react";
-import { initSocket,getSocket } from "../socket"; // Import socket
+import { ArrowLeft } from "lucide-react";
+import { initSocket, getSocket } from "../socket";
 import { setChats } from "../store/chatSlicer";
 import { useSelector } from "react-redux";
+import { Button } from "./ui/Button";
 
 interface Props {
   currentUserId: string;
 }
 
 export default function MessageContainer({ currentUserId }: Props) {
-    const { user } = useSelector((state:any) => state.auth);
+  const { user } = useSelector((state: any) => state.auth);
   const [allChat, setAllChat] = useState<any[]>([]);
   const [userChatId, setUserChatId] = useState("");
   const [loading, setLoading] = useState(true);
-  const [selectedChat,setSelectedChat]= useState<any[]>([])
- 
+  const [selectedChat, setSelectedChat] = useState<any[]>([]);
+      console.log("user",user)
   const getAllChat = async () => {
     try {
       const { data } = await axiosInstance.get("/message/allChats");
-      
+      console.log("fck",data)
       const formattedChat = data.map((chat: any) => {
         const otherUser = chat.participants.find(
           (p: any) => p._id !== currentUserId
@@ -35,18 +36,19 @@ export default function MessageContainer({ currentUserId }: Props) {
           otherUser: otherUser,
           lastMessage: chat.messages?.[0]
             ? {
-                senderId: chat.messages[0].senderId,
-                senderName: otherUser?.fullName || "Unknown",
-                senderProfile: otherUser?.profilePhoto || "",
-                text: chat.messages[0].message,
-              }
+              senderId: chat.messages[0].senderId,
+              senderName: otherUser?.fullName || "Unknown",
+              senderProfile: otherUser?.profilePhoto || "",
+              text: chat.messages[0].message,
+              timestamp: chat.messages[0].createdAt,
+            }
             : null,
           unreadCount: 0,
         };
       });
 
       setAllChat(formattedChat);
-      setChats(formattedChat)
+      setChats(formattedChat);
       setLoading(false);
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Fetching chats failed");
@@ -55,14 +57,16 @@ export default function MessageContainer({ currentUserId }: Props) {
   };
 
   useEffect(() => {
-     let socket:any
-    if(user){
-       socket=getSocket()||initSocket(user.id)
-      // console.log(user);
-
+    let socket: any;
+    if (user) {
+      let userId= user._id
+      socket = getSocket() || initSocket(userId);
+            console.log("scd",socket)
     }
+    console.log("chala")
     if (socket) {
-        getAllChat(); }
+      getAllChat();
+    }
 
     return () => {
       if (socket) {
@@ -73,10 +77,9 @@ export default function MessageContainer({ currentUserId }: Props) {
 
   const handleChatClick = (id: string) => {
     setUserChatId(id);
-    const selectedChat = allChat.find(chat => chat.id === id);
-    // console.log(selectedChat,"vdfv")
+    const selectedChat = allChat.find((chat) => chat.id === id);
     if (selectedChat?.otherUser) {
-      setSelectedChat(selectedChat?.otherUser)
+      setSelectedChat(selectedChat?.otherUser);
     }
   };
 
@@ -84,34 +87,35 @@ export default function MessageContainer({ currentUserId }: Props) {
     setUserChatId("");
   };
 
-
   if (loading) {
     return (
-      <div className="h-screen flex justify-center items-center">
-        <div className="animate-spin h-10 w-10 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+      <div className="flex h-screen items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent"></div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 overflow-hidden bg-gray-50">
+    <div className="flex h-full flex-1 overflow-hidden bg-slate-50/50">
       {userChatId === "" ? (
         <ChatList chats={allChat} onChatClick={handleChatClick} />
       ) : (
-        <div className="h-full flex flex-col">
-          <div className="flex items-center p-4 bg-white border-b">
-            <button
-              className="mr-4 p-2 rounded-full hover:bg-gray-200"
+        <div className="flex h-full w-full flex-col">
+          <div className="flex items-center gap-4 border-b border-slate-200 bg-white/80 p-4 backdrop-blur-md">
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={handleBack}
+              className="gap-2"
             >
-              <ArrowLeftCircle />Back
-            </button>
-            <span>Back to Chats</span>
+              <ArrowLeft size={20} />
+              Back
+            </Button>
           </div>
-          
-          <Messages
-            userChat={selectedChat}
-          />
+
+          <div className="flex-1 overflow-hidden">
+            <Messages userChat={selectedChat} />
+          </div>
         </div>
       )}
     </div>

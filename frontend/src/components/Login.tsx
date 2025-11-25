@@ -6,8 +6,11 @@ import axiosInstance from "../config/apiconfig";
 import { useState } from "react";
 import { z } from "zod";
 import { login } from "../store/authSlicer";
-import { Lock, LogIn, Mail } from "lucide-react";
+import {   Lock, LogIn, Mail } from "lucide-react";
 import { useDispatch } from "react-redux";
+import { Button } from "./ui/Button";
+import { Input } from "./ui/Input";
+import { Card } from "./ui/Card";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -31,117 +34,75 @@ function Login() {
 
   const onSubmit = async (data: loginFormData) => {
     setLoading(true);
-    console.log(data);
     try {
       const response = await axiosInstance.post("/user/login", data);
-      console.log(response);
-      const userData = response.data;
+      localStorage.setItem("token", response?.data?.token);
+      const user = await axiosInstance.get("/user/me");
 
       dispatch(
         login({
-          user: {
-            id: userData._id,
-            email: userData.email,
-            name: userData.fullName,
-          },
+          user: user.data,
+          token: response.data.token
         })
       );
 
-      sessionStorage.setItem("token", response?.data?.token.userToken);
       toast.success("Login successful!");
       navigate("/");
     } catch (error: any) {
-      console.log(error.response.data.message);
-      toast.error(error.response.data.message || "Login failed");
+      toast.error(error.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="bg-indigo-100 rounded-full p-3 w-14 h-14 mx-auto mb-4 flex items-center justify-center shadow-sm">
-            <LogIn className="text-indigo-600" size={26} />
+    <div className="flex min-h-screen items-center justify-center p-4">
+      <Card className="w-full max-w-md glass">
+        <div className="mb-8 text-center">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 shadow-sm">
+            <LogIn size={26} />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Welcome Back</h1>
-          <p className="text-gray-500 mt-1">Sign in to your account</p>
+          <h1 className="text-2xl font-bold text-slate-900">Welcome Back</h1>
+          <p className="mt-1 text-slate-500">Sign in to your account</p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          {/* Username */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Username
-            </label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-gray-400" />
-              </span>
-              <input
-                type="text"
-                {...register("username")}
-                className="pl-10 pr-3 py-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all duration-200"
-                placeholder="Enter your username"
-              />
-            </div>
-            {errors.username && (
-              <p className="mt-1 text-sm text-red-600">{errors.username.message}</p>
-            )}
-          </div>
+          <Input
+            label="Username"
+            placeholder="Enter your username"
+            icon={<Mail className="h-5 w-5" />}
+            error={errors.username?.message}
+            {...register("username")}
+          />
 
-          {/* Password */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Lock className="h-5 w-5 text-gray-400" />
-              </span>
-              <input
-                type="password"
-                {...register("password")}
-                className="pl-10 pr-3 py-2 w-full border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all duration-200"
-                placeholder="••••••••"
-              />
-            </div>
-            {errors.password && (
-              <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
-            )}
-          </div>
+          <Input
+            label="Password"
+            type="password"
+            placeholder="••••••••"
+            icon={<Lock className="h-5 w-5" />}
+            error={errors.password?.message}
+            {...register("password")}
+          />
 
-          {/* Submit Button */}
-          <button
+          <Button
             type="submit"
-            className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium shadow-md flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-60"
-            disabled={isSubmitting || loading}
+            className="w-full"
+            isLoading={isSubmitting || loading}
           >
-            {loading ? (
-              <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
-            ) : (
-              <>
-                <LogIn size={18} />
-                Sign In
-              </>
-            )}
-          </button>
+            Sign In
+          </Button>
         </form>
 
-        {/* Footer */}
-        <p className="text-center mt-6 text-gray-600 text-sm">
+        <div className="mt-6 text-center text-sm text-slate-600">
           Don't have an account?{" "}
           <Link
             to="/register"
-            className="text-indigo-600 hover:text-indigo-500 font-medium"
+            className="font-medium text-indigo-600 hover:text-indigo-500"
           >
             Sign up
           </Link>
-        </p>
-      </div>
+        </div>
+      </Card>
     </div>
   );
 }

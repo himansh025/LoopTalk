@@ -1,15 +1,16 @@
-import { Link, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../hooks/hooks";
 import axiosInstance from "../config/apiconfig";
 import { logout } from "../store/authSlicer";
-import { GlobeIcon, LogOut, MessageCircle, UserRoundCogIcon } from "lucide-react";
+import { GlobeIcon, LogOut, MessageSquare, User, Code2 } from "lucide-react";
 import { MdLogin } from "react-icons/md";
+import { Button } from "./ui/Button";
 
 interface LogoutResponse {
   message: string;
 }
 interface SidebarProps {
-  closeSidebar?: () => void; // optional for mobile
+  closeSidebar?: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
@@ -20,46 +21,90 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
   const logoutHandler = async () => {
     try {
       await axiosInstance.post<LogoutResponse>(`/user/logout`);
-      navigate("/login");
+      localStorage.removeItem("token");
       dispatch(logout());
+      navigate("/login");
       if (closeSidebar) closeSidebar();
     } catch (error) {
       console.error(error);
     }
   };
 
-  return (
-    <div className="bg-blue-950 text-white p-4 flex flex-col h-full w-full">
-      <span className="text-lg font-bold mb-4">Chit-Chat</span>
+  const navItems = [
+    { path: "/", icon: MessageSquare, label: "Chats" },
+    { path: "/online", icon: GlobeIcon, label: "Online Users" },
+    { path: "/profile", icon: User, label: "Profile" },
+  ];
 
-      <div className="flex flex-col text-lg gap-3">
-        <Link to="/" onClick={closeSidebar} className="flex gap-3 items-center">
-          <MessageCircle /> Chats
-        </Link>
-        <Link to="/profile" onClick={closeSidebar} className="flex gap-3 items-center">
-          <UserRoundCogIcon /> Profile
-        </Link>
-           <Link to="/online" onClick={closeSidebar} className="flex gap-3 items-center">
-          <GlobeIcon /> Online
-        </Link>
-        
+  return (
+    <div className="flex h-screen w-full flex-col border-r border-white/20 bg-slate-900/95 text-slate-300 backdrop-blur-xl">
+      {/* Brand */}
+      <div className=" hidden md:flex items-center gap-3 p-6 text-white">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 shadow-lg shadow-indigo-500/30">
+          <Code2 size={24} />
+        </div>
+        <span className="text-xl font-bold tracking-tight">LoopTalk</span>
       </div>
 
-      {user ? (
-        <div className="mt-auto">
-          <button
-            onClick={logoutHandler}
-            className="w-full bg-red-600 hover:bg-red-700 py-2 rounded"
+      {/* Navigation */}
+      <nav className="flex-1 space-y-1 px-3 py-4">
+        {navItems.map((item) => (
+          <NavLink
+            key={item.path}
+            to={item.path}
+            onClick={closeSidebar}
+            className={({ isActive }) =>
+              `group flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 ${isActive
+                ? "bg-indigo-600 text-white shadow-lg shadow-indigo-900/20"
+                : "hover:bg-white/10 hover:text-white"
+              }`
+            }
           >
-            <LogOut className="inline mr-2" /> Logout
-          </button>
-        </div>
-      ):
-      <>
-       <Link to="/login" onClick={closeSidebar} className="flex gap-3 text-lg h-8 mt-2 items-center">
-          <MdLogin /> Login
-        </Link>
-      </>}
+            <item.icon size={20} />
+            <span className="font-medium">{item.label}</span>
+          </NavLink>
+        ))}
+      </nav>
+
+      {/* Footer / User Section */}
+      <div className="border-t border-white/10 p-4">
+        {user ? (
+          <div className="mb-4 flex items-center gap-3 px-2">
+            <img
+              src={
+                user.profilePhoto ||
+                `https://ui-avatars.com/api/?name=${user.fullName}`
+              }
+              alt="Profile"
+              className="h-10 w-10 rounded-full border-2 border-indigo-500/30"
+            />
+            <div className="flex-1 min-w-0">
+              <p className="truncate text-sm font-medium text-white">
+                {user.fullName.toUpperCase()}
+              </p>
+              <p className="truncate text-xs text-slate-500">@{user.username}</p>
+            </div>
+          </div>
+        ) : null}
+
+        {user ? (
+          <Button
+            variant="danger"
+            className="w-full justify-start gap-2 bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white"
+            onClick={logoutHandler}
+          >
+            <LogOut size={18} />
+            <span>Sign Out</span>
+          </Button>
+        ) : (
+          <NavLink to="/login" onClick={closeSidebar}>
+            <Button className="w-full gap-2">
+              <MdLogin size={18} />
+              <span>Sign In</span>
+            </Button>
+          </NavLink>
+        )}
+      </div>
     </div>
   );
 };
