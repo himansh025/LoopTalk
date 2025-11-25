@@ -10,7 +10,7 @@ interface ChatListProps {
 
 const ChatList: React.FC<ChatListProps> = ({ chats, onChatClick }) => {
   return (
-    <div className="h-full w-full p-4 md:p-6">
+    <div className="h-full w-full p-4  md:p-6">
       <Card className="h-full w-full glass flex flex-col">
         <div className="border-b border-slate-100 p-4">
           <h2 className="text-xl font-bold text-slate-900">Messages</h2>

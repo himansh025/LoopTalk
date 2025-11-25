@@ -37,7 +37,7 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
   ];
 
   return (
-    <div className="flex h-full w-full flex-col border-r border-white/20 bg-slate-900/95 text-slate-300 backdrop-blur-xl">
+    <div className="flex h-screen w-full flex-col border-r border-white/20 bg-slate-900/95 text-slate-300 backdrop-blur-xl">
       {/* Brand */}
       <div className=" hidden md:flex items-center gap-3 p-6 text-white">
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 shadow-lg shadow-indigo-500/30">

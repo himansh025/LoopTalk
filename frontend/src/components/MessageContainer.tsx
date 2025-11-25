@@ -59,9 +59,11 @@ export default function MessageContainer({ currentUserId }: Props) {
   useEffect(() => {
     let socket: any;
     if (user) {
-      socket = getSocket() || initSocket(user._id);
+      let userId= user._id
+      socket = getSocket() || initSocket(userId);
             console.log("scd",socket)
     }
+    console.log("chala")
     if (socket) {
       getAllChat();
     }
@@ -109,24 +111,6 @@ export default function MessageContainer({ currentUserId }: Props) {
               <ArrowLeft size={20} />
               Back
             </Button>
-            <div className="flex items-center gap-3">
-              <img
-                src={
-                  (selectedChat as any)?.profilePhoto ||
-                  `https://ui-avatars.com/api/?name=${(selectedChat as any)?.fullName}`
-                }
-                alt="Profile"
-                className="h-10 w-10 rounded-full border border-slate-200"
-              />
-              <div>
-                <h3 className="font-semibold text-slate-900">
-                  {(selectedChat as any)?.fullName}
-                </h3>
-                <p className="text-xs text-slate-500">
-                  @{(selectedChat as any)?.username}
-                </p>
-              </div>
-            </div>
           </div>
 
           <div className="flex-1 overflow-hidden">

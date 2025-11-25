@@ -33,7 +33,6 @@ export default function MessageInput({
           size="sm"
           className="rounded-full p-2"
         >
-          <Paperclip size={20} />
         </Button>
         <Button
           type="button"

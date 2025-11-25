@@ -4,7 +4,7 @@ import Navbar from "./Navbar";
 
 function Layout() {
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50">
+    <div className="flex  bg-slate-50">
       <aside className="hidden md:flex w-72 flex-col h-full shrink-0">
         <Sidebar />
       </aside>
