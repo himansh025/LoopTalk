@@ -77,7 +77,7 @@ const OnlineUser: React.FC = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setOpenUserChat(false)}
+            // onClick={() => setOpenUserChat(false)}
             className="flex items-center gap-2 text-slate-600 hover:text-slate-900"
           >
             <ArrowLeft size={16} />
@@ -184,7 +184,7 @@ const OnlineUser: React.FC = () => {
                     <Card
                       key={user._id}
                       className="flex cursor-pointer items-center gap-4 p-4 transition-all hover:shadow-lg border-0 bg-white/80 backdrop-blur-sm"
-                      onClick={() => handleUserClick(user)}
+                      // onClick={() => handleUserClick(user)}
                     >
                       <div className="relative flex-shrink-0">
                         <img

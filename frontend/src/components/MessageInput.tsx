@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Send, Paperclip, Image as ImageIcon, Smile } from "lucide-react";
+import { Send, Image as ImageIcon, Smile } from "lucide-react";
 import { Button } from "./ui/Button";
 
 interface Props {
