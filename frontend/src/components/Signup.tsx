@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, useNavigate } from "react-router-dom";
-import { UserPlus, Lock, User, Mail } from "lucide-react";
+import { UserPlus, Lock, Mail } from "lucide-react";
 import axiosInstance from "../config/apiconfig";
 import { toast } from "react-toastify";
 import { Button } from "./ui/Button";
@@ -10,8 +10,6 @@ import { Input } from "./ui/Input";
 import { Card } from "./ui/Card";
 
 const registerSchema = z.object({
-  fullName: z.string().min(2, "Name must be at least 2 characters"),
-  username: z.string().min(5, "Username must be at least 5 characters"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   confirmPassword: z.string().min(6, "Password must be matched"),
@@ -46,7 +44,7 @@ function Signup() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
+    <div className="flex min-h-screen items-center justify-center p-4 py-8">
       <Card className="w-full max-w-md glass">
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-100 text-indigo-600 shadow-sm">
@@ -57,22 +55,6 @@ function Signup() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          <Input
-            label="Full Name"
-            placeholder="John Doe"
-            icon={<User className="h-5 w-5" />}
-            error={errors.fullName?.message}
-            {...register("fullName")}
-          />
-
-          <Input
-            label="Username"
-            placeholder="john123"
-            icon={<User className="h-5 w-5" />}
-            error={errors.username?.message}
-            {...register("username")}
-          />
-
           <Input
             label="Email"
             type="email"

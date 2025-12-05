@@ -9,6 +9,7 @@ import connectDB from "./config/database.js";
 import userRoute from "./routes/userRoute.js";
 import messageRoute from "./routes/messageRoute.js";
 import friendRoute from "./routes/friendshipRoute.js";
+import hobbyRoute from "./routes/hobbyRoute.js";
 
 dotenv.config();
 
@@ -43,6 +44,7 @@ connectDB();
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/message", messageRoute);
 app.use("/api/v1/friend", friendRoute);
+app.use("/api/v1/hobby", hobbyRoute);
 
 // ---------------- SOCKETS ----------------
 
