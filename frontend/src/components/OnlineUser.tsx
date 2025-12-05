@@ -4,7 +4,8 @@ import axiosInstance from "../config/apiconfig";
 import SearchBar from "./OnSearch";
 import Messages from "./Messages";
 import { useSelector } from "react-redux";
-import { MessageSquare, Users, ArrowLeft } from "lucide-react";
+import { MessageSquare, Users, ArrowLeft, Check, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Card } from "./ui/Card";
 import { Button } from "./ui/Button";
 
@@ -19,10 +20,12 @@ const OnlineUser: React.FC = () => {
   const onlineUserIds = useSelector((state: any) => state.onlineUsers.users);
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"online" | "all">("online");
+  const [activeTab, setActiveTab] = useState<"online" | "all" | "requests">("online");
+  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
   const { user } = useSelector((state: any) => state.auth);
   const [openUserChat, setOpenUserChat] = useState(false);
   const [userData, setUserData] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchAllUsers = async () => {
@@ -40,7 +43,40 @@ const OnlineUser: React.FC = () => {
     };
 
     fetchAllUsers();
+    fetchAllUsers();
   }, [user?.id]);
+
+  const fetchRequests = async () => {
+    try {
+      const { data } = await axiosInstance.get("/friend/pending");
+      setPendingRequests(data.requests);
+    } catch (error) {
+      console.error("Failed to fetch requests", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+
+  const handleAccept = async (requestId: string) => {
+    try {
+      await axiosInstance.put(`/friend/accept/${requestId}`);
+      // toast.success("Friend request accepted"); // toast not imported, maybe add it or skip
+      fetchRequests();
+    } catch (error: any) {
+      console.error("Failed to accept", error);
+    }
+  };
+
+  const handleReject = async (requestId: string) => {
+    try {
+      await axiosInstance.put(`/friend/reject/${requestId}`);
+      fetchRequests();
+    } catch (error: any) {
+      console.error("Failed to reject", error);
+    }
+  };
 
   const handleSearch = async (query: string) => {
     try {
@@ -131,23 +167,30 @@ const OnlineUser: React.FC = () => {
               <div className="flex items-center gap-1 rounded-xl bg-slate-100 p-1">
                 <button
                   onClick={() => setActiveTab("online")}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ${
-                    activeTab === "online"
-                      ? "bg-white text-indigo-600 shadow-sm"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
+                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ${activeTab === "online"
+                    ? "bg-white text-indigo-600 shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                    }`}
                 >
                   Online ({onlineUsers.length})
                 </button>
                 <button
                   onClick={() => setActiveTab("all")}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ${
-                    activeTab === "all"
-                      ? "bg-white text-indigo-600 shadow-sm"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
+                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ${activeTab === "all"
+                    ? "bg-white text-indigo-600 shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                    }`}
                 >
                   All Users ({allUsers.length})
+                </button>
+                <button
+                  onClick={() => setActiveTab("requests")}
+                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ${activeTab === "requests"
+                    ? "bg-white text-indigo-600 shadow-sm"
+                    : "text-slate-600 hover:text-slate-900"
+                    }`}
+                >
+                  Requests ({pendingRequests.length})
                 </button>
               </div>
             </div>
@@ -160,14 +203,49 @@ const OnlineUser: React.FC = () => {
         </div>
 
         {/* Users List/Grid */}
-        {displayUsers.length === 0 ? (
+        {activeTab === "requests" ? (
+          pendingRequests.length === 0 ? (
+            <Card className="flex flex-col items-center justify-center rounded-2xl border-0 bg-white/80 py-20 text-center backdrop-blur-sm shadow-xl">
+              <div className="mb-4 text-slate-300">
+                <Users size={64} />
+              </div>
+              <h3 className="mb-2 text-xl font-medium text-slate-900">No pending requests</h3>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+              {pendingRequests.map((req) => (
+                <Card key={req._id} className="flex flex-col p-6 border-0 bg-white/80 backdrop-blur-sm shadow-lg">
+                  <div className="flex items-center gap-4 mb-4">
+                    <img
+                      src={req.requester.profilePhoto || `https://ui-avatars.com/api/?name=${encodeURIComponent(req.requester.fullName)}`}
+                      alt={req.requester.fullName}
+                      className="h-16 w-16 rounded-full border-2 border-white shadow-sm object-cover"
+                    />
+                    <div>
+                      <h3 className="font-semibold text-slate-900">{req.requester.fullName}</h3>
+                      <p className="text-sm text-slate-500">@{req.requester.username}</p>
+                    </div>
+                  </div>
+                  <div className="mt-auto flex gap-3">
+                    <Button onClick={() => handleAccept(req._id)} className="flex-1 bg-green-600 hover:bg-green-700 gap-2">
+                      <Check size={16} /> Accept
+                    </Button>
+                    <Button onClick={() => handleReject(req._id)} variant="danger" className="flex-1 gap-2">
+                      <X size={16} /> Reject
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )
+        ) : displayUsers.length === 0 ? (
           <Card className="flex flex-col items-center justify-center rounded-2xl border-0 bg-white/80 py-20 text-center backdrop-blur-sm shadow-xl">
             <div className="mb-4 text-slate-300">
               <Users size={64} />
             </div>
             <h3 className="mb-2 text-xl font-medium text-slate-900">No users found</h3>
             <p className="text-slate-500 max-w-sm">
-              {activeTab === "online" 
+              {activeTab === "online"
                 ? "No users are currently online. Try checking all users."
                 : "Try adjusting your search or check back later."}
             </p>
@@ -179,12 +257,12 @@ const OnlineUser: React.FC = () => {
               <div className="space-y-3">
                 {displayUsers.map((user) => {
                   const userIsOnline = isUserOnline(user._id);
-                  
+
                   return (
                     <Card
                       key={user._id}
                       className="flex cursor-pointer items-center gap-4 p-4 transition-all hover:shadow-lg border-0 bg-white/80 backdrop-blur-sm"
-                      // onClick={() => handleUserClick(user)}
+                    // onClick={() => handleUserClick(user)}
                     >
                       <div className="relative flex-shrink-0">
                         <img
@@ -201,7 +279,7 @@ const OnlineUser: React.FC = () => {
                           <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-green-500"></span>
                         )}
                       </div>
-                      
+
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <h3 className="truncate font-semibold text-slate-900">
@@ -215,7 +293,7 @@ const OnlineUser: React.FC = () => {
                           @{user.username}
                         </p>
                       </div>
-                      
+
                       <Button
                         size="sm"
                         className="flex-shrink-0 gap-2"
@@ -248,7 +326,7 @@ const OnlineUser: React.FC = () => {
                       onClick={() => handleUserClick(user)}
                     />
 
-                    <div className="relative z-10 mb-4" onClick={() => handleUserClick(user)}>
+                    <div className="relative z-10 mb-4" onClick={() => navigate(`/user/${user._id}`)}>
                       <div className="relative">
                         <img
                           src={
@@ -266,7 +344,7 @@ const OnlineUser: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="z-10 mb-6 w-full min-w-0" onClick={() => handleUserClick(user)}>
+                    <div className="z-10 mb-6 w-full min-w-0" onClick={() => navigate(`/user/${user._id}`)}>
                       <h3 className="truncate text-lg font-semibold text-slate-900">
                         {user.fullName}
                       </h3>
