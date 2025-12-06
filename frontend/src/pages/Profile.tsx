@@ -114,26 +114,14 @@ const Profile = () => {
       updateData.append("email", formData.email);
       if (formData.age) updateData.append("age", formData.age);
 
-      // Append hobbies individually or as JSON string depending on backend handling
-      // Since backend expects array, we might need to send JSON if using FormData
-      // Or we can modify backend to parse JSON string for hobbies
-      // For now, let's assume we send a separate request for hobbies or backend handles it
-
-      // Let's use a separate API call for hobbies if needed, but here we'll try to send it
-      // Since we are using FormData for file upload, arrays are tricky.
-      // Let's send hobbies as JSON string and update backend to parse it if needed
-      // OR better: Update user profile first, then update hobbies if they changed
-
       if (formData.profilePic) {
         updateData.append("profilePic", formData.profilePic);
       }
 
-      // First update profile info and photo
       await axiosInstance.put("/user/profile", updateData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      // Then update hobbies and age via JSON request (cleaner)
       await axiosInstance.put("/user/profile", {
         fullName: formData.fullName,
         email: formData.email,
@@ -141,7 +129,6 @@ const Profile = () => {
         hobbies: hobbies
       });
 
-      // Refetch profile to get updated data
       const response = await axiosInstance.get("/user/profile");
       setUserData(response.data.userProfile);
 

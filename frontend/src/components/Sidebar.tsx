@@ -1,10 +1,10 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../hooks/hooks";
 import axiosInstance from "../config/apiconfig";
 import { logout } from "../store/authSlicer";
 import { GlobeIcon, LogOut, MessageSquare, User, Code2, Share2 } from "lucide-react";
 import { MdLogin } from "react-icons/md";
 import { Button } from "./ui/Button";
+import { useDispatch, useSelector } from "react-redux";
 
 interface LogoutResponse {
   message: string;
@@ -14,9 +14,9 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
-  const dispatch = useAppDispatch();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user } = useAppSelector((state) => state.auth);
+  const { user } = useSelector((state:any) => state.auth);
 
   const logoutHandler = async () => {
     try {
