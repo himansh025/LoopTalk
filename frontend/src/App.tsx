@@ -1,5 +1,4 @@
 import { Routes, Route } from "react-router-dom";
-import { useAppSelector } from "./hooks/hooks";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
 import Authenticated from "./components/Authenticated";
@@ -16,11 +15,11 @@ import { toast, ToastContainer } from "react-toastify";
 import axiosInstance from "./config/apiconfig";
 import { login } from "./store/authSlicer";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Loader from "./components/ui/Loader";
 
 function App() {
-    const { user } = useAppSelector((state) => state.auth);
+    const { user } = useSelector((state:any) => state.auth);
     const navigate = useNavigate()
     const [loading, setLoading] = useState(false)
     const dispatch = useDispatch()
