@@ -17,7 +17,7 @@ const CustomNode: React.FC<NodeProps<React.ComponentProps<any>>> = ({ data }) =>
     const nodeData = data as unknown as CustomNodeData;
 
     const baseSize = 120;
-    const score = nodeData.popularityScore || 0;
+    const score = nodeData?.popularityScore || 0;
     const sizeMultiplier = 1 + (score * 0.1);
     const nodeSize = baseSize * sizeMultiplier;
 

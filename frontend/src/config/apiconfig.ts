@@ -13,11 +13,11 @@ const axiosInstance:AxiosInstance = axios.create({
 });
 
 // Request interceptor
-console.log(sessionStorage.getItem("token"))
+// console.log(sessionStorage.getItem("token"))
 axiosInstance.interceptors.request.use(
   (config:InternalAxiosRequestConfig):InternalAxiosRequestConfig => {
     const token = localStorage.getItem("token");
-    console.log(token);
+    // console.log(token);
     if (token && config.headers) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }

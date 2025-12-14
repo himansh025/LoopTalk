@@ -19,11 +19,9 @@ export default function MessageContainer({ currentUserId }: Props) {
   const [userChatId, setUserChatId] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedChat, setSelectedChat] = useState<any[]>([]);
-  console.log("user", user)
   const getAllChat = async () => {
     try {
       const { data } = await axiosInstance.get("/message/allChats");
-      console.log("fck", data)
       const formattedChat = data.map((chat: any) => {
         const otherUser = chat.participants.find(
           (p: any) => p._id !== currentUserId
@@ -61,9 +59,7 @@ export default function MessageContainer({ currentUserId }: Props) {
     if (user) {
       let userId = user._id
       socket = getSocket() || initSocket(userId);
-      console.log("scd", socket)
     }
-    console.log("chala")
     if (socket) {
       getAllChat();
     }
@@ -113,7 +109,7 @@ export default function MessageContainer({ currentUserId }: Props) {
             </Button>
           </div>
 
-          <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 flex flex-col h-full overflow-hidden">
             <Messages userChat={selectedChat} />
           </div>
         </div>

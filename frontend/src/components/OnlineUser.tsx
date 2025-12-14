@@ -212,7 +212,7 @@ const OnlineUser: React.FC = () => {
               <h3 className="mb-2 text-xl font-medium text-slate-900">No pending requests</h3>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            <div className="grid grid-cols-2 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
               {pendingRequests.map((req) => (
                 <Card key={req._id} className="flex flex-col p-6 border-0 bg-white/80 backdrop-blur-sm shadow-lg">
                   <div className="flex items-center gap-4 mb-4">
@@ -253,81 +253,81 @@ const OnlineUser: React.FC = () => {
         ) : (
           <>
             {/* Mobile List View */}
-            <div className="block lg:hidden">
-              <div className="space-y-3">
-                {displayUsers.map((user) => {
-                  const userIsOnline = isUserOnline(user._id);
+         {/* Mobile Simple List View */}
+<div className="block lg:hidden">
+  <div className="divide-y divide-slate-200 bg-white rounded-xl overflow-hidden">
+    {displayUsers.map((user) => {
+      const userIsOnline = isUserOnline(user._id);
 
-                  return (
-                    <Card
-                      key={user._id}
-                      className="flex cursor-pointer items-center gap-4 p-4 transition-all hover:shadow-lg border-0 bg-white/80 backdrop-blur-sm"
-                    // onClick={() => handleUserClick(user)}
-                    >
-                      <div className="relative flex-shrink-0">
-                        <img
-                          src={
-                            user.profilePhoto ||
-                            `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                              user.fullName
-                            )}&background=6366f1&color=fff`
-                          }
-                          alt={user.fullName}
-                          className="h-12 w-12 rounded-full border-2 border-white object-cover shadow-sm"
-                        />
-                        {userIsOnline && (
-                          <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-green-500"></span>
-                        )}
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <h3 className="truncate font-semibold text-slate-900">
-                            {user.fullName}
-                          </h3>
-                          {userIsOnline && (
-                            <span className="flex h-2 w-2 rounded-full bg-green-500"></span>
-                          )}
-                        </div>
-                        <p className="truncate text-sm text-slate-500">
-                          @{user.username}
-                        </p>
-                      </div>
-
-                      <Button
-                        size="sm"
-                        className="flex-shrink-0 gap-2"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleUserClick(user);
-                        }}
-                      >
-                        <MessageSquare size={14} />
-                        <span className="hidden sm:inline">Chat</span>
-                      </Button>
-                    </Card>
-                  );
-                })}
-              </div>
+      return (
+        <div
+          key={user._id}
+          className="flex items-center justify-between px-4 py-3"
+        >
+          {/* Left: Avatar + Info */}
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="relative">
+              <img
+                src={
+                  user.profilePhoto ||
+                  `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    user.fullName
+                  )}&background=6366f1&color=fff`
+                }
+                alt={user.fullName}
+                className="h-10 w-10 rounded-full object-cover"
+              />
+              {userIsOnline && (
+                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-green-500 border-2 border-white" />
+              )}
             </div>
 
+            <div className="min-w-0">
+              <p className="truncate font-medium text-slate-900">
+                {user.fullName}
+              </p>
+              <p className="truncate text-sm text-slate-500">
+                @{user.username}
+              </p>
+            </div>
+          </div>
+
+          {/* Right: Chat Button */}
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => handleUserClick(user)}
+            className="text-indigo-600"
+          >
+            <MessageSquare size={18} />
+          </Button>
+        </div>
+      );
+    })}
+  </div>
+</div>
+
+
             {/* Desktop Grid View */}
-            <div className="hidden lg:grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            <div className="hidden  lg:grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
               {displayUsers.map((user) => {
                 const userIsOnline = isUserOnline(user._id);
 
                 return (
                   <Card
                     key={user._id}
-                    className="group relative flex cursor-pointer flex-col items-center overflow-hidden p-6 text-center transition-all hover:-translate-y-1 hover:shadow-xl border-0 bg-white/80 backdrop-blur-sm"
+                    className="group relative flex cursor-pointer flex-col items-center overflow-hidden p-2 text-center transition-all hover:-translate-y-1 hover:shadow-xl border-0 bg-white/80 backdrop-blur-sm"
                   >
                     <div
-                      className="absolute inset-0 z-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 opacity-0 transition-opacity group-hover:opacity-100"
+                      className="absolute h-auto inset-0 z-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 opacity-0 transition-opacity group-hover:opacity-100"
                       onClick={() => handleUserClick(user)}
                     />
 
                     <div className="relative z-10 mb-4" onClick={() => navigate(`/user/${user._id}`)}>
                       <div className="relative">
+                        {userIsOnline && (
+                          <span className="absolute bottom-1 right-1 h-2 w-2 rounded-full border-2 border-white bg-green-500 shadow-sm"></span>
+                        )}
                         <img
                           src={
                             user.profilePhoto ||
@@ -338,13 +338,10 @@ const OnlineUser: React.FC = () => {
                           alt={user.fullName}
                           className="h-20 w-20 rounded-full border-4 border-white object-cover shadow-md transition-transform group-hover:scale-105"
                         />
-                        {userIsOnline && (
-                          <span className="absolute bottom-1 right-1 h-4 w-4 rounded-full border-2 border-white bg-green-500 shadow-sm"></span>
-                        )}
                       </div>
                     </div>
 
-                    <div className="z-10 mb-6 w-full min-w-0" onClick={() => navigate(`/user/${user._id}`)}>
+                    <div className="z-10 mb-4 w-full min-w-0" onClick={() => navigate(`/user/${user._id}`)}>
                       <h3 className="truncate text-lg font-semibold text-slate-900">
                         {user.fullName}
                       </h3>
@@ -373,7 +370,7 @@ const OnlineUser: React.FC = () => {
                         handleUserClick(user);
                       }}
                     >
-                      <MessageSquare size={16} />
+                      <MessageSquare size={10} />
                       Message
                     </Button>
                   </Card>

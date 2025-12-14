@@ -61,7 +61,6 @@ const GraphVisualization: React.FC = () => {
                 const response = await axiosInstance.get("/hobby/graph");
                 dispatch(setGraphData(response.data));
             } catch (error: any) {
-                console.error("Failed to fetch graph data:", error);
                 toast.error("Failed to load network graph");
             } finally {
                 setLoading(false);
@@ -147,11 +146,16 @@ const GraphVisualization: React.FC = () => {
                 onNodeClick={onNodeClick}
                 nodeTypes={nodeTypes}
                 fitView
-                className="bg-slate-50"
+                className="bg-slate-50 w-full h-full"
+                style={{ width: '100%', height: '100%' }}
             >
                 <Background />
                 <Controls />
             </ReactFlow>
+
+            <div className="absolute top-4 right-4 z-50 bg-white/80 backdrop-blur p-2 rounded shadow text-xs pointer-events-none">
+                Nodes: {nodes.length}, Edges: {edges.length}
+            </div>
 
             {connectionSource && (
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-4 py-2 rounded-full shadow-lg text-sm font-medium animate-in fade-in slide-in-from-top-4 z-10">

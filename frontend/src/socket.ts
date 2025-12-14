@@ -8,8 +8,6 @@ const socketurl: string = import.meta.env.VITE_SOCKET_API_URL|| "http://localhos
 let socket: Socket | null = null;
 
 export const initSocket = (userId: string) => {
-          console.log("fck")
-          console.log("socket",userId)
     if (socket) return socket;
 
     socket = io(socketurl, {
@@ -17,7 +15,6 @@ export const initSocket = (userId: string) => {
     });
 
     socket.on("connect", () => {
-        console.log("✅ Connected to server");
         socket?.emit("register", userId);
 
         // IMPORTANT: start listening and dispatching to Redux
@@ -25,7 +22,6 @@ export const initSocket = (userId: string) => {
     });
 
     socket.on("disconnect", () => {
-        console.log("❌ Disconnected from server");
     });
 
     return socket;

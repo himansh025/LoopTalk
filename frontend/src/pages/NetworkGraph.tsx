@@ -5,17 +5,16 @@ import FriendSuggestions from "../components/FriendSuggestions";
 const NetworkGraph = () => {
     return (
         <div className="h-full w-full flex flex-col">
-            <div className="bg-white border-b border-slate-200 px-6 py-4">
+            <div className="bg-white border-b border-slate-200 px-6 py-4 shrink-0">
                 <h1 className="text-2xl font-bold text-slate-800">Friends Network</h1>
                 <p className="text-slate-500 text-sm">Explore connections based on shared interests</p>
             </div>
-            <div className="flex-1 relative overflow-hidden flex flex-col md:flex-row">
-                <div className="flex-1 relative h-full">
+            <div className="flex-1 relative overflow-hidden flex flex-col md:flex-row min-h-0">
+                <div className=" flex flex-col h-full  w-full">
                     <ReactFlowProvider>
                         <GraphVisualization />
                     </ReactFlowProvider>
                 </div>
-
                 <div className="w-full md:w-80 border-l border-slate-200 bg-white h-full overflow-y-auto p-4 hidden md:block">
                     <FriendSuggestions />
                 </div>

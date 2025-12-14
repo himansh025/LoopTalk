@@ -6,7 +6,6 @@ import { useSelector } from 'react-redux'
 function Authenticated(
 ) {
     const {user}= useSelector((state:any)=>state.auth)
-    console.log(user)
     const navigate= useNavigate()
     useEffect(()=>{
       if(!user) navigate("/login")

@@ -19,7 +19,7 @@ import { useDispatch, useSelector } from "react-redux";
 import Loader from "./components/ui/Loader";
 
 function App() {
-    const { user } = useSelector((state:any) => state.auth);
+    const { user } = useSelector((state: any) => state.auth);
     const navigate = useNavigate()
     const [loading, setLoading] = useState(false)
     const dispatch = useDispatch()
@@ -30,7 +30,6 @@ function App() {
             const socket = initSocket(user.id);
 
             socket.on("newMessage", (message) => {
-                console.log("💬 New message received:", message);
             });
 
             return () => {
@@ -41,10 +40,10 @@ function App() {
 
     const token = localStorage.getItem("token")
     useEffect(() => {
-        if(user && token ) navigate("/")
+        if (user && token) navigate("/")
 
 
-        if (token ) {
+        if (token) {
             const getUserProfile = async () => {
                 try {
                     setLoading(true)
@@ -55,7 +54,7 @@ function App() {
                     toast.error(error.message)
                     localStorage.removeItem("token")
                     navigate("/login")
-                }finally{
+                } finally {
                     setLoading(false)
                 }
 
@@ -64,8 +63,8 @@ function App() {
         }
     }, [token]);
 
-    if(loading){
-        return <Loader/>
+    if (loading) {
+        return <Loader />
     }
     return (
 

@@ -11,7 +11,7 @@ interface MessagesProps {
 
 const Messages: React.FC<MessagesProps> = ({ userChat }) => {
   const listRef = useRef<HTMLDivElement | null>(null);
-  const { user } = useSelector((state:any) => state.auth);
+  const { user } = useSelector((state: any) => state.auth);
   const [currentMessages, setCurrentMessages] = useState<any[]>([]);
 
   // Fetch old messages
@@ -74,10 +74,10 @@ const Messages: React.FC<MessagesProps> = ({ userChat }) => {
     new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
   return (
-    <div className="flex flex-col h-full bg-slate-50">
-  
+    <div className="flex h-full flex-col bg-slate-50">
 
-      <div ref={listRef} className="flex-1 p-6 space-y-6 overflow-y-auto scroll-smooth" style={{ minHeight: 0 }}>
+
+      <div ref={listRef} className="flex-1 p-4 space-y-6 overflow-y-auto scroll-smooth" style={{ minHeight: 0 }}>
         {currentMessages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-slate-400">
             <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
@@ -120,8 +120,8 @@ const Messages: React.FC<MessagesProps> = ({ userChat }) => {
         )}
       </div>
 
-      <div className="p-4 bg-white relative border-t border-slate-200">
-                  
+      <div className="p-4 bg-white  relative border-t border-slate-200">
+
         <MessageInput onSend={sendMessage} placeholder={`Message ${userChat?.fullName || '...'}`} />
       </div>
     </div>

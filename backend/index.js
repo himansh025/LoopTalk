@@ -57,13 +57,13 @@ export const getReceiverSocketId = (receiverId) => {
 const getOnlineUsers = () => Object.keys(userSocketMap);
 
 io.on("connection", (socket) => {
-  console.log("⚡ User connected:", socket.id);
+  // console.log("⚡ User connected:", socket.id);
 
   // Auto-registration using query
   const userId = socket.handshake.query.userId;
   if (userId) {
     userSocketMap[userId] = socket.id;
-    console.log(`🔵 User ${userId} registered (query)`);
+    // console.log(`🔵 User ${userId} registered (query)`);
 
     io.emit("getOnlineUsers", getOnlineUsers());
   }
@@ -72,7 +72,7 @@ io.on("connection", (socket) => {
   socket.on("register", (uid) => {
     if (uid) {
       userSocketMap[uid] = socket.id;
-      console.log(`🟢 User ${uid} registered (event)`);
+      // console.log(`🟢 User ${uid} registered (event)`);
 
       io.emit("getOnlineUsers", getOnlineUsers());
     }
@@ -80,7 +80,7 @@ io.on("connection", (socket) => {
 
   // Disconnect handler
   socket.on("disconnect", () => {
-    console.log("🔴 User disconnected:", socket.id);
+    // console.log("🔴 User disconnected:", socket.id);
 
     for (const uid in userSocketMap) {
       if (userSocketMap[uid] === socket.id) {

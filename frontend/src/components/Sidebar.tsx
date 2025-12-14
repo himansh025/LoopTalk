@@ -16,7 +16,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user } = useSelector((state:any) => state.auth);
+  const { user } = useSelector((state: any) => state.auth);
 
   const logoutHandler = async () => {
     try {
@@ -32,7 +32,7 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
 
   const navItems = [
     { path: "/", icon: MessageSquare, label: "Chats" },
-    { path: "/online", icon: GlobeIcon, label: "Online Users" },
+    { path: "/online", icon: GlobeIcon, label: "People" },
     { path: "/profile", icon: User, label: "Profile" },
     { path: "/network", icon: Share2, label: "Network" },
   ];
