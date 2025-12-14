@@ -29,7 +29,8 @@ function App() {
         if (user?.id) {
             const socket = initSocket(user.id);
 
-            socket.on("newMessage", (message) => {
+            socket.on("newMessage", () => {
+                // console.log("newMessage", message)
             });
 
             return () => {
