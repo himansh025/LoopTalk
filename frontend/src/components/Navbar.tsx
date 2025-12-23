@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, X, Code2 } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import Sidebar from "./Sidebar";
 import { Button } from "./ui/Button";
 
@@ -13,10 +13,8 @@ const Navbar: React.FC = () => {
       {/* Top Mobile Navbar */}
       <nav className="fixed left-0 right-0 top-0 z-50 flex h-14 items-center justify-between border-b border-white/10 bg-slate-900/95 px-4 py-3 text-white shadow-md backdrop-blur-xl md:hidden">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 shadow-lg shadow-indigo-500/30">
-            <Code2 size={18} />
-          </div>
-          <span className="text-lg font-bold tracking-tight">LoopTalk</span>
+          {/* <img src="/logo192.png" alt="Logo" className="w-8 h-8" /> */}
+          <span className="text-lg font-bold">DevChat</span>
         </div>
 
         <Button

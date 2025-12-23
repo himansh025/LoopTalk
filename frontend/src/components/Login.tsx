@@ -46,6 +46,7 @@ function Login() {
         })
       );
 
+      localStorage.setItem("token", response?.data?.token.userToken);
       toast.success("Login successful!");
       navigate("/");
     } catch (error: any) {

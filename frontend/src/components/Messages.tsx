@@ -3,6 +3,7 @@ import MessageInput from "./MessageInput";
 import axiosInstance from "../config/apiconfig";
 import { toast } from "react-toastify";
 import { getSocket, initSocket } from "../socket";
+// import { MoreVertical, Phone, Video } from "lucide-react";
 import { useSelector } from "react-redux";
 
 interface MessagesProps {
@@ -11,7 +12,7 @@ interface MessagesProps {
 
 const Messages: React.FC<MessagesProps> = ({ userChat }) => {
   const listRef = useRef<HTMLDivElement | null>(null);
-  const { user } = useSelector((state: any) => state.auth);
+  const { user } = useSelector((state:any) => state.auth);
   const [currentMessages, setCurrentMessages] = useState<any[]>([]);
 
   // Fetch old messages

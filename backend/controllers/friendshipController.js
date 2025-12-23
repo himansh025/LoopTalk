@@ -5,6 +5,7 @@ import { User } from "../models/userModel.js";
 export const sendFriendRequest = async (req, res) => {
   try {
     const { recipientId } = req.body;
+
     const requesterId = req.id; // assuming auth middleware sets req.id
 
     if (requesterId.toString() === recipientId) {
@@ -17,6 +18,7 @@ export const sendFriendRequest = async (req, res) => {
       recipient: recipientId,
     });
 
+    await User.findByIdAndUpdate(requesterId, { $addToSet: { friendRequests: recipientId } });
     if (existing) {
       return res.status(400).json({ message: "Friend request already sent" });
     }
@@ -47,6 +49,10 @@ export const acceptFriendRequest = async (req, res) => {
 
     request.status = "accepted";
     await request.save();
+
+    // Update both users' friends list
+    await User.findByIdAndUpdate(request.requester, { $addToSet: { friends: request.recipient } });
+    await User.findByIdAndUpdate(request.recipient, { $addToSet: { friends: request.requester } });
 
     res.json({ message: "Friend request accepted", data: request });
   } catch (error) {

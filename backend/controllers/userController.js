@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import mongoose from "mongoose";
+import { Friendship } from "../models/FriendListModel.js";
 
 export const register = async (req, res) => {
     try {
@@ -44,6 +45,8 @@ export const register = async (req, res) => {
         res.status(500).json({ message: "Server error" });
     }
 };
+
+
 export const login = async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -68,10 +71,8 @@ export const login = async (req, res) => {
             userId: user._id
         };
 
-        const token = await jwt.sign(tokenData, process.env.JWT_SECRET
-            || "derdvfbgedvb34we3423ewveqg4vbvrrtgf"
-            , { expiresIn: '1d' });
-        console.log(token)
+        const token = await jwt.sign(tokenData, process.env.JWT_SECRET || "derdvfbgedvb34we3423ewveqg4vbvrrtgf", { expiresIn: '1d' });
+
 
         return res.status(200).cookie("token", token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite: 'strict' }).json({ token: token }
         );
@@ -79,6 +80,8 @@ export const login = async (req, res) => {
         console.log(error);
     }
 }
+
+
 export const logout = (req, res) => {
     try {
         return res.status(200).cookie("token", "", { maxAge: 0 }).json({
@@ -88,6 +91,8 @@ export const logout = (req, res) => {
         console.log(error);
     }
 }
+
+
 export const getOtherUsers = async (req, res) => {
     try {
         const loggedInUserId = req.id;
@@ -97,6 +102,7 @@ export const getOtherUsers = async (req, res) => {
         console.log(error);
     }
 }
+
 
 export const allUsers = async (req, res) => {
     try {
@@ -112,23 +118,76 @@ export const allUsers = async (req, res) => {
             };
         }
         const allUsers = await User.find(query).select("-password");
-        return res.status(200).json(allUsers);
+        const friendRequests = await Friendship.find(req.id).select("-password");
+        console.log(friendRequests)
+        
+        return res.status(200).json({allUsers,friendRequests});
     } catch (error) {
         console.log(error);
     }
 }
+
+
 export const profile = async (req, res) => {
     try {
-        const userProfile = await User.findById(req.id).select("-password");
+        const userId = req.query.userId || req.id;
 
-        return res.status(200).json({ message: "userprofile is getting", userProfile });
+        // 1. Get user profile
+        const userProfile = await User.findById(userId).select("-password");
+
+        if (!userProfile) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // 2. Get all friendships in ONE query
+        const friendships = await Friendship.find({
+            $or: [{ requester: userId }, { recipient: userId }],
+        })
+            .populate("requester", "fullName username profilePhoto")
+            .populate("recipient", "fullName username profilePhoto");
+
+        // 3. Separate friends & requests
+        const friendList = [];
+        const friendRequests = [];
+
+        friendships.forEach((friendship) => {
+            if (friendship.status === "accepted") {
+                const friend =
+                    friendship.requester._id.toString() === userId
+                        ? friendship.recipient
+                        : friendship.requester;
+
+                friendList.push(friend);
+            }
+
+            if (
+                friendship.status === "pending" &&
+                friendship.recipient._id.toString() === userId
+            ) {
+                friendRequests.push(friendship.requester);
+            }
+        });
+
+        // 4. Single response object
+        return res.status(200).json({
+            message: "Profile fetched successfully",
+            userProfile,
+            friendList,
+            friendRequests,
+        });
+
     } catch (error) {
-        console.log(error);
+        console.error(error);
+        return res.status(500).json({ message: "Server error" });
     }
-}
+};
+
 
 export const getMe = async (req, res) => {
     try {
+        if (!mongoose.isValidObjectId(req.id)) {
+            console.log("id")
+        }
         const user = await User.findById(req.id).select("-password");
         return res.status(200).json(user);
     } catch (error) {
@@ -137,21 +196,18 @@ export const getMe = async (req, res) => {
 }
 
 
-// PUT /user/profile
 export const updateUserProfile = async (req, res) => {
     try {
         console.log(req.id)
         const userId = req.id;
         const { fullName, email, age, hobbies } = req.body;
 
-        // build update object
         const updateFields = {};
         if (fullName) updateFields.fullName = fullName;
         if (email) updateFields.email = email;
         if (age) updateFields.age = age;
         if (hobbies) updateFields.hobbies = hobbies;
 
-        // if file uploaded by multer
         if (req.file) {
             const filePath = req.file.path
             const result = await uploadOnCloudinary(filePath);

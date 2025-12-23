@@ -1,157 +1,228 @@
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import axiosInstance from "../config/apiconfig";
-import { toast } from "react-toastify";
-import Loader from "../components/ui/Loader";
-import { User, Mail, Calendar, Hash, UserPlus, Check, X, Clock } from "lucide-react";
-import { Card } from "../components/ui/Card";
-import { Button } from "../components/ui/Button";
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import axiosInstance from '../config/apiconfig';
+import { ArrowLeft, Mail, User as UserIcon, Calendar, Users, Heart } from 'lucide-react';
+import { Loader } from '../components/Loader';
+import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
+import Messages from '../components/Messages';
 
-const UserProfile = () => {
-    const { userId } = useParams();
-    const [user, setUser] = useState<any>(null);
-    const [friendshipStatus, setFriendshipStatus] = useState("none");
-    const [friendshipId, setFriendshipId] = useState<string | null>(null);
-    const [isSender, setIsSender] = useState(false);
+interface UserProfileData {
+    _id: string;
+    fullName: string;
+    username: string;
+    email: string;
+    profilePhoto: string;
+    gender: string;
+    createdAt: string;
+    friends: any[];
+    hobbies?: string[];
+}
+
+const UserProfile: React.FC = () => {
+    const { userId } = useParams<{ userId: string }>();
+    const navigate = useNavigate();
+    const { user } = useSelector((state: any) => state.auth);
+
+    const [profile, setProfile] = useState<UserProfileData | null>(null);
     const [loading, setLoading] = useState(true);
-
-    const fetchUserProfile = async () => {
-        try {
-            setLoading(true);
-            const { data } = await axiosInstance.get(`/user/${userId}`);
-            setUser(data.user);
-            setFriendshipStatus(data.friendshipStatus);
-            setFriendshipId(data.friendshipId);
-            setIsSender(data.isSender);
-        } catch (error: any) {
-            toast.error(error.response?.data?.message || "Failed to fetch user profile");
-        } finally {
-            setLoading(false);
-        }
-    };
+    const [error, setError] = useState("");
+    const [pendingRequests, setPendingRequests] = useState<string[]>([]);
+    const [openUserChat, setOpenUserChat] = useState(false);
 
     useEffect(() => {
-        if (userId) fetchUserProfile();
+        const fetchProfile = async () => {
+            try {
+                setLoading(true);
+                const url = userId ? `/user/profile?userId=${userId}` : '/user/profile';
+                const { data } = await axiosInstance.get(url);
+                console.log(data);
+                setProfile(data.userProfile);
+            } catch (err: any) {
+                console.error("Failed to fetch profile:", err);
+                setError(err.response?.data?.message || "Failed to load profile");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (userId) {
+            fetchProfile();
+        }
     }, [userId]);
 
+    const isFriend = profile?.friends?.some((f: any) => f._id === user?._id || f.id === user?._id);
+    const isPending = userId && pendingRequests.includes(userId);
+
     const handleSendRequest = async () => {
+        if (!userId) return;
         try {
             await axiosInstance.post("/friend/send", { recipientId: userId });
             toast.success("Friend request sent!");
-            fetchUserProfile();
+            setPendingRequests([...pendingRequests, userId]);
         } catch (error: any) {
             toast.error(error.response?.data?.message || "Failed to send request");
         }
     };
 
-    const handleAcceptRequest = async () => {
-        try {
-            await axiosInstance.put(`/friend/accept/${friendshipId}`);
-            toast.success("Friend request accepted!");
-            fetchUserProfile();
-        } catch (error: any) {
-            toast.error(error.response?.data?.message || "Failed to accept request");
-        }
+    const handleMessage = () => {
+        setOpenUserChat(true);
     };
 
-    const handleRejectRequest = async () => {
-        try {
-            await axiosInstance.put(`/friend/reject/${friendshipId}`);
-            toast.success("Friend request rejected!");
-            fetchUserProfile();
-        } catch (error: any) {
-            toast.error(error.response?.data?.message || "Failed to reject request");
-        }
-    };
+    if (openUserChat && profile) {
+        return <Messages userChat={profile} />;
+    }
 
     if (loading) return <Loader />;
-    if (!user) return <div className="text-center p-10">User not found</div>;
+
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center h-screen text-slate-500">
+                <p className="text-lg mb-4">{error}</p>
+                <button
+                    onClick={() => navigate(-1)}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                >
+                    Go Back
+                </button>
+            </div>
+        );
+    }
+
+    if (!profile) return null;
 
     return (
-        <div className=" bg-slate-50 py-8 px-4">
-            <div className="max-w-4xl mx-auto space-y-6">
-                {/* Header Card */}
-                <Card className="p-6 flex flex-col md:flex-row items-center gap-6 bg-white shadow-md">
-                    <img
-                        src={user.profilePhoto || `https://ui-avatars.com/api/?name=${user.fullName}`}
-                        alt={user.fullName}
-                        className="w-32 h-32 rounded-full border-4 border-indigo-100 object-cover"
-                    />
-                    <div className="flex-1 text-center md:text-left space-y-2">
-                        <h1 className="text-3xl font-bold text-slate-900">{user.fullName}</h1>
-                        <p className="text-slate-500">@{user.username}</p>
+        <div className="w-full min-h-screen bg-slate-50 p-4 md:p-8">
+            <div className="max-w-4xl mx-auto">
+                <button
+                    onClick={() => navigate(-1)}
+                    className="flex items-center text-slate-600 hover:text-slate-900 mb-6 transition-colors"
+                >
+                    <ArrowLeft size={20} className="mr-2" />
+                    Back
+                </button>
 
-                        <div className="flex flex-wrap justify-center md:justify-start gap-3 mt-4">
-                            {friendshipStatus === "none" && (
-                                <Button onClick={handleSendRequest} className="gap-2 bg-indigo-600 hover:bg-indigo-700">
-                                    <UserPlus size={18} /> Add Friend
-                                </Button>
-                            )}
+                <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-slate-200">
+                    {/* Cover / Header */}
+                    <div className="h-32 bg-gradient-to-r from-indigo-500 to-purple-600"></div>
 
-                            {friendshipStatus === "pending" && isSender && (
-                                <Button disabled className="gap-2 bg-slate-400 cursor-not-allowed">
-                                    <Clock size={18} /> Request Sent
-                                </Button>
-                            )}
+                    <div className="px-8 pb-8">
+                        <div className="relative flex justify-between items-end -mt-12 mb-6">
+                            <div className="relative">
+                                <img
+                                    src={profile.profilePhoto || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile.fullName)}&background=6366f1&color=fff`}
+                                    alt={profile.fullName}
+                                    className="w-24 h-24 rounded-full border-4 border-white shadow-md object-cover bg-white"
+                                />
+                                <div className={`absolute bottom-1 right-1 w-5 h-5 rounded-full border-2 border-white ${true ? 'bg-green-500' : 'bg-slate-300'}`} title="Online Status"></div>
+                            </div>
+                            {/* Actions */}
+                            <div className="flex gap-3">
+                                {isFriend ? (
+                                    <button
+                                        onClick={handleMessage}
+                                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-colors shadow-sm shadow-indigo-200"
+                                    >
+                                        Message
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={handleSendRequest}
+                                        disabled={isPending || !userId}
+                                        className={`px-4 py-2 border rounded-lg font-medium transition-colors ${isPending
+                                                ? "bg-yellow-50 text-yellow-600 border-yellow-200 cursor-not-allowed"
+                                                : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+                                            }`}
+                                    >
+                                        {isPending ? "Request Sent" : "Add Friend"}
+                                    </button>
+                                )}
+                            </div>
+                        </div>
 
-                            {friendshipStatus === "pending" && !isSender && (
-                                <div className="flex gap-2">
-                                    <Button onClick={handleAcceptRequest} className="gap-2 bg-green-600 hover:bg-green-700">
-                                        <Check size={18} /> Accept
-                                    </Button>
-                                    <Button onClick={handleRejectRequest} variant="danger" className="gap-2">
-                                        <X size={18} /> Reject
-                                    </Button>
-                                </div>
-                            )}
+                        <div className="mb-8">
+                            <h1 className="text-2xl font-bold text-slate-900">{profile.fullName}</h1>
+                            <p className="text-slate-500">@{profile.username}</p>
+                        </div>
 
-                            {friendshipStatus === "accepted" && (
-                                <Button disabled className="gap-2 bg-green-100 text-green-700 border border-green-200">
-                                    <Check size={18} /> Friends
-                                </Button>
-                            )}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            {/* Left Column: Info */}
+                            <div className="space-y-6">
+                                <section>
+                                    <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-3">About</h3>
+                                    <div className="space-y-3">
+                                        <div className="flex items-center text-slate-600">
+                                            <Mail size={18} className="mr-3 text-slate-400" />
+                                            <span className="text-sm">{profile.email}</span>
+                                        </div>
+                                        <div className="flex items-center text-slate-600">
+                                            <UserIcon size={18} className="mr-3 text-slate-400" />
+                                            <span className="text-sm capitalize">{profile.gender}</span>
+                                        </div>
+                                        <div className="flex items-center text-slate-600">
+                                            <Calendar size={18} className="mr-3 text-slate-400" />
+                                            <span className="text-sm">Joined {new Date(profile.createdAt).toLocaleDateString()}</span>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section>
+                                    <h3 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                        <Heart size={16} />
+                                        Hobbies
+                                    </h3>
+                                    <div className="flex flex-wrap gap-2">
+                                        {profile.hobbies && profile.hobbies.length > 0 ? (
+                                            profile.hobbies.map((hobby, index) => (
+                                                <span key={index} className="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-sm">
+                                                    {hobby}
+                                                </span>
+                                            ))
+                                        ) : (
+                                            <p className="text-sm text-slate-400 italic">No hobbies added yet.</p>
+                                        )}
+                                    </div>
+                                </section>
+                            </div>
+
+                            {/* Right Column: Friends / Content */}
+                            <div className="md:col-span-2">
+                                <section>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                                            <Users size={20} />
+                                            Friends
+                                            <span className="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full text-xs">
+                                                {profile.friends?.length || 0}
+                                            </span>
+                                        </h3>
+                                    </div>
+
+                                    {profile.friends && profile.friends.length > 0 ? (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            {profile.friends.map((friend: any) => (
+                                                <div key={friend._id} className="flex items-center gap-3 p-3 rounded-lg border border-slate-100 hover:border-slate-200 hover:bg-slate-50 transition-all cursor-pointer" onClick={() => navigate(`/user/${friend._id}`)}>
+                                                    <img
+                                                        src={friend.profilePhoto || `https://ui-avatars.com/api/?name=${encodeURIComponent(friend.fullName)}`}
+                                                        alt={friend.fullName}
+                                                        className="w-10 h-10 rounded-full object-cover"
+                                                    />
+                                                    <div className="overflow-hidden">
+                                                        <p className="font-medium text-slate-900 truncate">{friend.fullName}</p>
+                                                        <p className="text-xs text-slate-500 truncate">@{friend.username}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-8 bg-slate-50 rounded-lg border border-dashed border-slate-200">
+                                            <p className="text-slate-500">No friends yet.</p>
+                                        </div>
+                                    )}
+                                </section>
+                            </div>
                         </div>
                     </div>
-                </Card>
-
-                {/* Details Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Personal Info */}
-                    <Card className="p-6 space-y-4">
-                        <h3 className="text-lg font-semibold border-b pb-2">About</h3>
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-3 text-slate-600">
-                                <User size={18} />
-                                <span>{user.gender || "Not specified"}</span>
-                            </div>
-                            {user.age && (
-                                <div className="flex items-center gap-3 text-slate-600">
-                                    <Calendar size={18} />
-                                    <span>{user.age} years old</span>
-                                </div>
-                            )}
-                            <div className="flex items-center gap-3 text-slate-600">
-                                <Mail size={18} />
-                                <span>{user.email}</span>
-                            </div>
-                        </div>
-                    </Card>
-
-                    {/* Hobbies */}
-                    <Card className="p-6 space-y-4">
-                        <h3 className="text-lg font-semibold border-b pb-2">Hobbies & Interests</h3>
-                        <div className="flex flex-wrap gap-2">
-                            {user.hobbies && user.hobbies.length > 0 ? (
-                                user.hobbies.map((hobby: string, i: number) => (
-                                    <span key={i} className="px-3 py-1 bg-pink-50 text-pink-700 rounded-full text-sm font-medium flex items-center gap-1">
-                                        <Hash size={14} /> {hobby}
-                                    </span>
-                                ))
-                            ) : (
-                                <p className="text-slate-500 italic">No hobbies added yet.</p>
-                            )}
-                        </div>
-                    </Card>
                 </div>
             </div>
         </div>

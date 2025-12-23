@@ -3,8 +3,8 @@ import ChatList from "./ChatList";
 import axiosInstance from "../config/apiconfig";
 import { toast } from "react-toastify";
 import Messages from "./Messages";
-import { ArrowLeft } from "lucide-react";
-import { initSocket, getSocket } from "../socket";
+import { ArrowLeftCircle, Loader } from "lucide-react";
+import { initSocket, getSocket } from "../socket"; // Import socket
 import { setChats } from "../store/chatSlicer";
 import { useSelector } from "react-redux";
 import { Button } from "./ui/Button";
@@ -57,8 +57,8 @@ export default function MessageContainer({ currentUserId }: Props) {
   useEffect(() => {
     let socket: any;
     if (user) {
-      let userId = user._id
-      socket = getSocket() || initSocket(userId);
+      socket = getSocket() || initSocket(user._id || user.id)
+
     }
     if (socket) {
       getAllChat();
@@ -73,7 +73,7 @@ export default function MessageContainer({ currentUserId }: Props) {
 
   const handleChatClick = (id: string) => {
     setUserChatId(id);
-    const selectedChat = allChat.find((chat) => chat.id === id);
+    const selectedChat = allChat.find(chat => chat.id === id);
     if (selectedChat?.otherUser) {
       setSelectedChat(selectedChat?.otherUser);
     }
@@ -84,11 +84,7 @@ export default function MessageContainer({ currentUserId }: Props) {
   };
 
   if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-indigo-500 border-t-transparent"></div>
-      </div>
-    );
+    return <Loader />
   }
 
   return (
@@ -104,8 +100,7 @@ export default function MessageContainer({ currentUserId }: Props) {
               onClick={handleBack}
               className="gap-2"
             >
-              <ArrowLeft size={20} />
-              Back
+              <ArrowLeftCircle />Back
             </Button>
           </div>
 

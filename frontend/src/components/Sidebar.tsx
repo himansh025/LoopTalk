@@ -1,10 +1,10 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import axiosInstance from "../config/apiconfig";
 import { logout } from "../store/authSlicer";
-import { GlobeIcon, LogOut, MessageSquare, User, Code2, Share2 } from "lucide-react";
+import { GlobeIcon, LogOut, MessageSquare, User, Code2 } from "lucide-react";
 import { MdLogin } from "react-icons/md";
-import { Button } from "./ui/Button";
 import { useDispatch, useSelector } from "react-redux";
+import { Button } from "./ui/Button";
 
 interface LogoutResponse {
   message: string;
@@ -26,15 +26,15 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
       navigate("/login");
       if (closeSidebar) closeSidebar();
     } catch (error) {
-      console.error(error);
+      // console.error(error);
     }
   };
 
   const navItems = [
     { path: "/", icon: MessageSquare, label: "Chats" },
-    { path: "/online", icon: GlobeIcon, label: "People" },
+    { path: "/explore", icon: GlobeIcon, label: "Explore" },
     { path: "/profile", icon: User, label: "Profile" },
-    { path: "/network", icon: Share2, label: "Network" },
+    // { path: "/settings", icon: Settings, label: "Settings" },
   ];
 
   return (
@@ -80,10 +80,7 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
               className="h-10 w-10 rounded-full border-2 border-indigo-500/30"
             />
             <div className="flex-1 min-w-0">
-              <p className="truncate text-sm font-medium text-white">
-                {user.fullName.toUpperCase()}
-              </p>
-              <p className="truncate text-xs text-slate-500">@{user.username}</p>
+              <p className="text-sm font-medium text-white truncate">{user?.fullName?.toUpperCase()}</p>
             </div>
           </div>
         ) : null}

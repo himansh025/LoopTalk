@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
 import Authenticated from "./components/Authenticated";
@@ -6,38 +6,35 @@ import HomePage from "./pages/HomePage";
 import LogoutButton from "./components/Logout";
 import Layout from "./components/Layout";
 import Profile from "./pages/Profile";
-import OnlineUser from "./components/OnlineUser";
-import NetworkGraph from "./pages/NetworkGraph";
 import UserProfile from "./pages/UserProfile";
 import { useEffect, useState } from "react";
 import { initSocket, closeSocket } from "./socket";
 import { toast, ToastContainer } from "react-toastify";
 import axiosInstance from "./config/apiconfig";
 import { login } from "./store/authSlicer";
-import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import Loader from "./components/ui/Loader";
+import { Loader } from "./components/Loader";
+import Explore from "./pages/Explore";
 
 function App() {
     const { user } = useSelector((state: any) => state.auth);
     const navigate = useNavigate()
-    const [loading, setLoading] = useState(false)
     const dispatch = useDispatch()
-    // const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(false)
+    const userId = user?._id || user?.id;
 
     useEffect(() => {
-        if (user?.id) {
-            const socket = initSocket(user.id);
+        if (userId) {
+            const socket = initSocket(userId);
 
             socket.on("newMessage", () => {
-                // console.log("newMessage", message)
             });
 
             return () => {
                 closeSocket();
             };
         }
-    }, [user?.id]);
+    }, [userId]);
 
     const token = localStorage.getItem("token")
     useEffect(() => {
@@ -48,13 +45,16 @@ function App() {
             const getUserProfile = async () => {
                 try {
                     setLoading(true)
-                    const data = await axiosInstance.get("/user/me");
-                    dispatch(login({ user: data.data }));
-                    navigate("/")
+                    const { data } = await axiosInstance.get("/user/me");
+                    dispatch(login({ user: data }))
+                    navigate("/");
+
                 } catch (error: any) {
-                    toast.error(error.message)
-                    localStorage.removeItem("token")
-                    navigate("/login")
+                    console.log(error?.response.status);
+                    if (error?.response.status === 401) {
+                        localStorage.removeItem("token")
+                    }
+                    toast.error(error?.response?.data?.message || " something went wrong")
                 } finally {
                     setLoading(false)
                 }
@@ -72,17 +72,16 @@ function App() {
         <div>
 
             <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Signup />} />
                 <Route path="/" element={<Layout />}>
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Signup />} />
 
                     {/* authenticated routes */}
                     <Route element={<Authenticated />}>
                         <Route index path="/" element={<HomePage />} />
                         <Route path="/logout" element={<LogoutButton />} />
                         <Route path="/profile" element={<Profile />} />
-                        <Route path="/online" element={<OnlineUser />} />
-                        <Route path="/network" element={<NetworkGraph />} />
+                        <Route path="/explore" element={< Explore />} />
                         <Route path="/user/:userId" element={<UserProfile />} />
                     </Route>
                 </Route>
