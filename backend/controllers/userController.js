@@ -1,5 +1,4 @@
 import { User } from "../models/userModel.js";
-import { Friendship } from "../models/FriendListModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
