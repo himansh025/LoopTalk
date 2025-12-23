@@ -1,8 +1,8 @@
 import axios, { AxiosError, type AxiosInstance, type AxiosResponse, type InternalAxiosRequestConfig } from "axios";
 
-const apiUrl:string = import.meta.env.VITE_API_URL;
+// const apiUrl:string = import.meta.env.VITE_API_URL;
 
-// const apiUrl:string = "http://localhost:5000/api/v1"
+const apiUrl:string = "http://localhost:5000/api/v1"
 
 const axiosInstance:AxiosInstance = axios.create({
   baseURL: `${apiUrl}`,
@@ -13,11 +13,10 @@ const axiosInstance:AxiosInstance = axios.create({
 });
 
 // Request interceptor
-console.log(sessionStorage.getItem("token"))
 axiosInstance.interceptors.request.use(
   (config:InternalAxiosRequestConfig):InternalAxiosRequestConfig => {
-    const token = sessionStorage.getItem("token");
-    console.log(token);
+    const token = localStorage.getItem("token");
+    // console.log(token);
     if (token && config.headers) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }

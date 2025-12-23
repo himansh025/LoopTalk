@@ -1,4 +1,3 @@
-// socket/socket.js
 import { Server } from "socket.io";
 import http from "http";
 import express from "express";
@@ -27,9 +26,6 @@ io.on("connection", (socket) => {
   socket.on("register", (userId) => {
     if (userId) {
       userSocketMap[userId] = socket.id;
-      console.log(`User ${userId} registered with socket ${socket.id}`);
-
-      // Emit online users to all clients
       io.emit("getOnlineUsers", Object.keys(userSocketMap));
     }
   });

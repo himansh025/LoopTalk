@@ -9,7 +9,7 @@ router.post("/login",login)
 router.post("/logout",logout)
 router.get("/all",allUsers)
 router.get("/profile",isAuthenticated,profile)
-router.put("/profile",isAuthenticated, upload.single('profilePic') ,updateUserProfile);
+router.put("/update-profile",isAuthenticated, upload.single('profilePic') ,updateUserProfile);
 router.get("/me",isAuthenticated, getMe);
 router.get("/",isAuthenticated,getOtherUsers);
 

@@ -61,7 +61,7 @@ const Profile = () => {
         updateData.append("profilePic", formData.profilePic);
       }
 
-      const { data } = await axiosInstance.put("/user/profile", updateData, {
+      const { data } = await axiosInstance.put("/user/update-profile", updateData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 

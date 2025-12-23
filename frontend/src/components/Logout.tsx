@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../config/apiconfig';
 import { useDispatch } from 'react-redux';
-import { logout  } from '../store/authSlicer'; // update path as per your structure
+import { logout } from '../store/authSlicer'; // update path as per your structure
 
 function LogoutButton() {
   const navigate = useNavigate();
@@ -12,11 +12,11 @@ function LogoutButton() {
     const handleLogout = async () => {
       try {
         await axiosInstance.post('auth/logout', {}, { withCredentials: true });
-        sessionStorage.removeItem("token");
+        localStorage.removeItem("token");
         dispatch(logout());
         navigate('/');
-      } catch (error:any) {
-        console.error("Logout failed:", error?.message);
+      } catch (error: any) {
+        // console.error("Logout failed:", error?.message);
       }
     };
 

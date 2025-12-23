@@ -1,9 +1,10 @@
 // OnlineUser.tsx - Responsive width for large screens
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { initSocket, getSocket } from "../socket";
 import axiosInstance from "../config/apiconfig";
-import SearchBar from "./OnSearch";
-import Messages from "./Messages";
+import SearchBar from "../components/OnSearch";
+import Messages from "../components/Messages";
 import { useSelector } from "react-redux";
 import { MessageSquare } from "lucide-react";
 
@@ -17,22 +18,23 @@ interface user2 {
   gender: string
 }
 
-const OnlineUser: React.FC = () => {
+const Explore: React.FC = () => {
   const onlineUserIds = useSelector((state: any) => state.onlineUsers.users);
+  console.log("onlineUserIds", onlineUserIds)
   const [allUsers, setAllUsers] = useState<user2[]>([]); // Typed correctly
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'online' | 'all'>('online');
+  const [activeTab, setActiveTab] = useState<'online' | 'all' | 'friends'>('online');
   const { user } = useSelector((state: any) => state.auth)
   const [openUserChat, setOpenUserChat] = useState(false);
   const [userData, setUserData] = useState({});
-
+  const [friends, setFriends] = useState([]);
 
   useEffect(() => {
 
     const fetchAllUsers = async () => {
       try {
         const { data } = await axiosInstance.get("/user/all");
-        const me = user?.id
+        const me = user?._id || user?.id
         const filteredUsers = data.filter((user: any) => user._id != me);
         setAllUsers(filteredUsers);
         setLoading(false);
@@ -45,7 +47,7 @@ const OnlineUser: React.FC = () => {
     const getFriends = async () => {
       try {
         const { data } = await axiosInstance.get("/friend/friends");
-        console.log(data)
+        setFriends(data.friends)
         setLoading(false);
       } catch (error) {
         console.error("Failed to fetch users:", error);
@@ -71,21 +73,30 @@ const OnlineUser: React.FC = () => {
   }
 
   useEffect(() => {
-    const socket = getSocket() || initSocket(user.id);
-    console.log("socket", socket);
+    const socket = getSocket() || initSocket(user?._id || user?.id);
+    socket.on("onlineUser", (data: any) => {
+      console.log("onlineUser", data);
+    })
   }, [user]);
 
   const onlineUsers = React.useMemo(() => {
     return allUsers.filter((u: any) => {
       const uid = u._id || u.id;
-      return onlineUserIds.includes(uid) && uid !== user?.id;
+      return onlineUserIds.includes(uid) && uid !== (user?._id || user?.id);
     });
-  }, [allUsers, onlineUserIds, user?.id]);
+  }, [allUsers, onlineUserIds, user?._id, user?.id]);
 
-  const handleUserClick = (userData: any) => {
+  const navigate = useNavigate();
+
+  const handleViewProfile = (userId: string) => {
+    navigate(`/user/${userId}`);
+  };
+
+  const handleStartChat = (e: React.MouseEvent, userData: any) => {
+    e.stopPropagation();
     console.log("Start chat with:", userData);
-    setOpenUserChat(true)
-    setUserData(userData)
+    setOpenUserChat(true);
+    setUserData(userData);
   };
 
   if (openUserChat) {
@@ -111,11 +122,16 @@ const OnlineUser: React.FC = () => {
     );
   }
 
-  const displayUsers = activeTab === 'online' ? onlineUsers : allUsers;
+  const displayUsers = React.useMemo(() => {
+    if (activeTab === 'online') return onlineUsers;
+    if (activeTab === 'friends') return friends;
+    return allUsers;
+  }, [activeTab, onlineUsers, friends, allUsers]);
+
   const isUserOnline = (userId: any) => {
     return onlineUsers.some(user => user == userId);
   };
-  console.log("isOnlineUser", isUserOnline)
+  // console.log("isOnlineUser", isUserOnline)
 
 
   return (
@@ -129,15 +145,6 @@ const OnlineUser: React.FC = () => {
 
         <div className="flex items-center gap-4 bg-slate-100 p-1 rounded-lg self-start">
           <button
-            onClick={() => setActiveTab('online')}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'online'
-              ? 'bg-white text-indigo-600 shadow-sm'
-              : 'text-slate-600 hover:text-slate-900'
-              }`}
-          >
-            Online ({onlineUsers.length})
-          </button>
-          <button
             onClick={() => setActiveTab('all')}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'all'
               ? 'bg-white text-indigo-600 shadow-sm'
@@ -145,6 +152,24 @@ const OnlineUser: React.FC = () => {
               }`}
           >
             All Users ({allUsers.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('online')}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'online'
+              ? 'bg-white text-indigo-600 shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+              }`}
+          >
+            Online  ({onlineUsers.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('friends')}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'friends'
+              ? 'bg-white text-indigo-600 shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+              }`}
+          >
+            Friends ({friends.length})
           </button>
         </div>
       </div>
@@ -169,9 +194,10 @@ const OnlineUser: React.FC = () => {
             const userIsOnline = isUserOnline(userId);
 
             return (
+
               <div
                 key={userId}
-                onClick={() => handleUserClick(user)}
+                onClick={() => handleViewProfile(userId)}
                 className="group bg-white rounded-xl p-5 border border-slate-200 hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer flex flex-col items-center text-center relative overflow-hidden"
               >
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -193,6 +219,7 @@ const OnlineUser: React.FC = () => {
                 </div>
 
                 <button
+                  onClick={(e) => handleStartChat(e, user)}
                   className="w-full mt-auto py-2.5 px-4 bg-slate-50 text-slate-700 font-medium rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-colors flex items-center justify-center gap-2"
                 >
                   <MessageSquare size={16} />
@@ -207,4 +234,4 @@ const OnlineUser: React.FC = () => {
   );
 };
 
-export default OnlineUser;
+export default Explore;

@@ -9,7 +9,7 @@ let socket: Socket | null = null;
 
 export const initSocket = (userId: string) => {
     if (socket) return socket;
-
+    console.log("userId", userId);
     socket = io(socketurl, {
         query: { userId }
     });

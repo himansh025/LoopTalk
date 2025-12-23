@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../hooks/hooks";
 import axiosInstance from "../config/apiconfig";
 import { logout } from "../store/authSlicer";
-import { GlobeIcon, LogOut, MessageSquare, User,  Code2 } from "lucide-react";
+import { GlobeIcon, LogOut, MessageSquare, User,  Code2, Settings } from "lucide-react";
 import { MdLogin } from "react-icons/md";
 
 interface LogoutResponse {
@@ -30,8 +30,9 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
 
   const navItems = [
     { path: "/", icon: MessageSquare, label: "Chats" },
-    { path: "/online", icon: GlobeIcon, label: "Online Users" },
+    { path: "/explore", icon: GlobeIcon, label: "Explore" },
     { path: "/profile", icon: User, label: "Profile" },
+    { path: "/settings", icon: Settings, label: "Settings" },
   ];
 
   return (
@@ -74,8 +75,7 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
               className="w-9 h-9 rounded-full border border-slate-600"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{user.fullName}</p>
-              <p className="text-xs text-slate-500 truncate">@{user.username}</p>
+              <p className="text-sm font-medium text-white truncate">{user?.fullName?.toUpperCase()}</p>
             </div>
           </div>
         ) : null}

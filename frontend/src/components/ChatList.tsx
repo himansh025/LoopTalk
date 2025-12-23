@@ -8,7 +8,6 @@ interface ChatListProps {
 }
 
 const ChatList: React.FC<ChatListProps> = ({ chats, onChatClick }) => {
-  console.log(chats)
   return (
     <div className="bg-white rounded-lg shadow-md w-full ml-3 md:mx-10 md:max-w-full  max-w-sm">
       {chats.length === 0 ? (

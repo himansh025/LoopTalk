@@ -74,7 +74,7 @@ export const getChats = async (req, res) => {
         options: { sort: { createdAt: -1 },limit:1 }, // Only get last message
       });
 
-      console.log("user chats",chats)
+      // console.log("user chats",chats)
 
     res.status(200).json(chats);
   } catch (error) {

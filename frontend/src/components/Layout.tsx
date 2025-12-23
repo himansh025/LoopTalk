@@ -1,14 +1,20 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
+import { useSelector } from "react-redux";
 
 function Layout() {
+  const { user } = useSelector((state: any) => state.auth);
+
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex w-72 flex-col h-full shrink-0">
-        <Sidebar />
-      </aside>
+      {user&&(
+        < aside className="hidden md:flex w-72 flex-col h-full shrink-0">
+          <Sidebar />
+        </aside>
+      )}
+
 
       <div className="flex-1 flex flex-col h-full relative min-w-0">
         {/* Mobile Navbar */}
@@ -19,7 +25,7 @@ function Layout() {
           <Outlet />
         </main>
       </div>
-    </div>
+    </div >
   );
 }
 
