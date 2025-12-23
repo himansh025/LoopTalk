@@ -5,13 +5,19 @@ import { Link, useNavigate } from "react-router-dom";
 import { UserPlus, Lock, User, Mail } from "lucide-react";
 import axiosInstance from "../config/apiconfig";
 import { toast } from "react-toastify";
+// import { Button } from "./ui/Button";
+// import { Input } from "./ui/Input";
+// import { Card } from "./ui/Card";
 
-const registerSchema = z.object({
-  fullName: z.string().min(2, "Name must be at least 2 characters"),
-  username: z.string().min(5, "Username must be at least 5 characters"),
+export const registerSchema = z.object({
+  fullName: z.string().min(2, "Full name is required"),
+  username: z.string().min(3, "Username must be at least 3 characters"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  confirmPassword: z.string().min(6, "Password must be matched"),
+  confirmPassword: z.string().min(6, "Confirm password is required"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
 });
 
 type SignupFormData = z.infer<typeof registerSchema>;
@@ -29,15 +35,13 @@ function Signup() {
 
   const onSubmit = async (data: SignupFormData) => {
     try {
-      console.log(data);
       const response = await axiosInstance.post("/user/register", data);
       if (response?.data) {
         toast.success("Registration successful! Please login.");
         navigate("/login");
       }
     } catch (error: any) {
-      console.log(error);
-      toast.error(error?.response?.message || "Registration failed");
+      toast.error(error?.response?.data?.message || "Registration failed");
     }
   };
 
@@ -68,9 +72,9 @@ function Signup() {
                 placeholder="John Doe"
               />
             </div>
-            {errors.fullName && (
+            {errors?.fullName && (
               <p className="mt-1.5 text-sm text-red-600 flex items-center gap-1">
-                <span className="text-xs">⚠</span> {errors.fullName.message}
+                <span className="text-xs">⚠</span> {errors?.fullName.message}
               </p>
             )}
           </div>

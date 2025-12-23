@@ -38,7 +38,10 @@ function App() {
 
     const token = localStorage.getItem("token")
     useEffect(() => {
-        if (token && !user) {
+        if (user && token) navigate("/")
+
+
+        if (token) {
             const getUserProfile = async () => {
                 try {
                     setLoading(true)
@@ -55,6 +58,7 @@ function App() {
                 } finally {
                     setLoading(false)
                 }
+
             };
             getUserProfile()
         }

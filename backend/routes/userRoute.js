@@ -1,5 +1,5 @@
 import express from "express";
-import { allUsers, getOtherUsers, login, logout, register,profile, updateUserProfile,getMe } from "../controllers/userController.js";
+import { allUsers, getOtherUsers, login, logout, register, profile, updateUserProfile, getMe, getUserById } from "../controllers/userController.js";
 import isAuthenticated from "../middleware/isAuthenticated.js";
 import { upload } from "../middleware/multer.js";
 const router = express.Router();

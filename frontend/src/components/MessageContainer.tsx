@@ -7,6 +7,7 @@ import { ArrowLeftCircle, Loader } from "lucide-react";
 import { initSocket, getSocket } from "../socket"; // Import socket
 import { setChats } from "../store/chatSlicer";
 import { useSelector } from "react-redux";
+import { Button } from "./ui/Button";
 
 interface Props {
   currentUserId: string;
@@ -17,12 +18,10 @@ export default function MessageContainer({ currentUserId }: Props) {
   const [allChat, setAllChat] = useState<any[]>([]);
   const [userChatId, setUserChatId] = useState("");
   const [loading, setLoading] = useState(true);
-  const [selectedChat, setSelectedChat] = useState<any[]>([])
-
+  const [selectedChat, setSelectedChat] = useState<any[]>([]);
   const getAllChat = async () => {
     try {
       const { data } = await axiosInstance.get("/message/allChats");
-
       const formattedChat = data.map((chat: any) => {
         const otherUser = chat.participants.find(
           (p: any) => p._id !== currentUserId
@@ -39,6 +38,7 @@ export default function MessageContainer({ currentUserId }: Props) {
               senderName: otherUser?.fullName || "Unknown",
               senderProfile: otherUser?.profilePhoto || "",
               text: chat.messages[0].message,
+              timestamp: chat.messages[0].createdAt,
             }
             : null,
           unreadCount: 0,
@@ -46,7 +46,7 @@ export default function MessageContainer({ currentUserId }: Props) {
       });
 
       setAllChat(formattedChat);
-      setChats(formattedChat)
+      setChats(formattedChat);
       setLoading(false);
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Fetching chats failed");
@@ -55,7 +55,7 @@ export default function MessageContainer({ currentUserId }: Props) {
   };
 
   useEffect(() => {
-    let socket: any
+    let socket: any;
     if (user) {
       socket = getSocket() || initSocket(user._id || user.id)
 
@@ -75,7 +75,7 @@ export default function MessageContainer({ currentUserId }: Props) {
     setUserChatId(id);
     const selectedChat = allChat.find(chat => chat.id === id);
     if (selectedChat?.otherUser) {
-      setSelectedChat(selectedChat?.otherUser)
+      setSelectedChat(selectedChat?.otherUser);
     }
   };
 
@@ -83,29 +83,30 @@ export default function MessageContainer({ currentUserId }: Props) {
     setUserChatId("");
   };
 
-
   if (loading) {
     return <Loader />
   }
 
   return (
-    <div className="flex-1 overflow-hidden bg-gray-50">
+    <div className="flex h-full flex-1 overflow-hidden bg-slate-50/50">
       {userChatId === "" ? (
         <ChatList chats={allChat} onChatClick={handleChatClick} />
       ) : (
-        <div className="h-full flex flex-col">
-          <div className="flex items-center p-4 bg-white border-b">
-            <button
-              className="mr-4 p-2 rounded-full hover:bg-gray-200"
+        <div className="flex h-full w-full flex-col">
+          <div className="flex items-center gap-4 border-b border-slate-200 bg-white/80 p-4 backdrop-blur-md">
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={handleBack}
+              className="gap-2"
             >
               <ArrowLeftCircle />Back
-            </button>
+            </Button>
           </div>
 
-          <Messages
-            userChat={selectedChat}
-          />
+          <div className="flex-1 flex flex-col h-full overflow-hidden">
+            <Messages userChat={selectedChat} />
+          </div>
         </div>
       )}
     </div>

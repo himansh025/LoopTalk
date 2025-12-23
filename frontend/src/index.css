@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @theme {
-  --font-sans: "Inter", sans-serif;
+  --font-sans: "Outfit", sans-serif;
   --font-mono: "JetBrains Mono", monospace;
 }
 
@@ -12,7 +12,9 @@
 }
 
 body {
-  @apply bg-slate-50 text-slate-900;
+  @apply bg-slate-50 text-slate-900 antialiased;
+  background: radial-gradient(circle at top left, #e0e7ff, #f3f4f6, #e0e7ff);
+  min-height: 100vh;
 }
 
 /* Custom Scrollbar */
@@ -31,4 +33,13 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-slate-400;
+}
+
+/* Glassmorphism utilities */
+.glass {
+  @apply bg-white/70 backdrop-blur-lg border border-white/20;
+}
+
+.glass-dark {
+  @apply bg-slate-900/80 backdrop-blur-lg border border-slate-700/50;
 }

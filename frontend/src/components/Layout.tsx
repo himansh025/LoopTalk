@@ -17,10 +17,8 @@ function Layout() {
 
 
       <div className="flex-1 flex flex-col h-full relative min-w-0">
-        {/* Mobile Navbar */}
         <Navbar />
 
-        {/* Page Content */}
         <main className="flex-1 overflow-hidden flex flex-col mt-14 md:mt-0">
           <Outlet />
         </main>

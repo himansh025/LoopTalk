@@ -1,4 +1,5 @@
 import { User } from "../models/userModel.js";
+import { Friendship } from "../models/FriendListModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
@@ -7,22 +8,23 @@ import { Friendship } from "../models/FriendListModel.js";
 
 export const register = async (req, res) => {
     try {
-        const { fullName, username, password, email, confirmPassword } = req.body;
-        if (!fullName || !username || !password || !email || !confirmPassword) {
+        const { password, email, confirmPassword } = req.body;
+        if (!password || !email || !confirmPassword) {
             return res.status(400).json({ message: "All fields are required" });
         }
         if (password !== confirmPassword) {
             return res.status(400).json({ message: "Password do not match" });
         }
 
-        const user = await User.findOne({ username });
-        if (user) {
-            return res.status(400).json({ message: "Username already exit try different" });
-        }
         const existingEmail = await User.findOne({ email });
         if (existingEmail) {
             return res.status(400).json({ message: "Email already exit try different" });
         }
+
+        // Generate fullName and username
+        const fullName = email.split('@')[0];
+        const username = `${fullName}${Math.floor(Math.random() * 10000)}`;
+
         const hashedPassword = await bcrypt.hash(password, 10);
 
         await User.create({
@@ -30,6 +32,9 @@ export const register = async (req, res) => {
             username,
             password: hashedPassword,
             email,
+            age: null,
+            hobbies: [],
+            popularityScore: 0
         });
         return res.status(201).json({
             message: "Account created successfully.",
@@ -37,6 +42,7 @@ export const register = async (req, res) => {
         })
     } catch (error) {
         console.log(error);
+        res.status(500).json({ message: "Server error" });
     }
 };
 
@@ -67,18 +73,9 @@ export const login = async (req, res) => {
 
         const token = await jwt.sign(tokenData, process.env.JWT_SECRET || "derdvfbgedvb34we3423ewveqg4vbvrrtgf", { expiresIn: '1d' });
 
-        return res.status(200).cookie("token", token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite: 'strict' }).json({
-            _id: user._id,
-            username: user.username,
-            email: user.email,
-            gender: user.gender,
-            fullName: user.fullName,
-            profilePhoto: user.profilePhoto,
-            token: {
-                userToken: token
-            }
-        });
 
+        return res.status(200).cookie("token", token, { maxAge: 1 * 24 * 60 * 60 * 1000, httpOnly: true, sameSite: 'strict' }).json({ token: token }
+        );
     } catch (error) {
         console.log(error);
     }
@@ -203,11 +200,13 @@ export const updateUserProfile = async (req, res) => {
     try {
         console.log(req.id)
         const userId = req.id;
-        const { fullName, email } = req.body;
+        const { fullName, email, age, hobbies } = req.body;
 
         const updateFields = {};
         if (fullName) updateFields.fullName = fullName;
         if (email) updateFields.email = email;
+        if (age) updateFields.age = age;
+        if (hobbies) updateFields.hobbies = hobbies;
 
         if (req.file) {
             const filePath = req.file.path
@@ -228,6 +227,41 @@ export const updateUserProfile = async (req, res) => {
         res.json({ message: "Profile updated successfully", updatedUser });
     } catch (error) {
         console.error("Profile update error:", error);
+        res.status(500).json({ message: "Server error" });
+    }
+};
+
+export const getUserById = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const currentUserId = req.id;
+
+        const user = await User.findById(userId).select("-password");
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Check friendship status
+        let friendshipStatus = "none"; // none, pending, accepted, rejected
+        let friendshipId = null;
+        let isSender = false;
+
+        const friendship = await Friendship.findOne({
+            $or: [
+                { requester: currentUserId, recipient: userId },
+                { requester: userId, recipient: currentUserId }
+            ]
+        });
+
+        if (friendship) {
+            friendshipStatus = friendship.status;
+            friendshipId = friendship._id;
+            isSender = friendship.requester.toString() === currentUserId;
+        }
+
+        res.status(200).json({ user, friendshipStatus, friendshipId, isSender });
+    } catch (error) {
+        console.error(error);
         res.status(500).json({ message: "Server error" });
     }
 };
