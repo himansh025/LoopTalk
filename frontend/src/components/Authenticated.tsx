@@ -1,15 +1,11 @@
 import { Outlet, useNavigate } from 'react-router-dom'
-import { useAppSelector } from '../hooks/hooks'
 import { useEffect } from 'react'
+import { useSelector } from 'react-redux'
 
-// interface Authenticatedprop{
-//     children:React.ReactNode
-// }
+
 function Authenticated(
-  // {}:Authenticatedprop
 ) {
-    const {user}= useAppSelector((state)=>state.auth)
-    console.log(user)
+    const {user}= useSelector((state:any)=>state.auth)
     const navigate= useNavigate()
     useEffect(()=>{
       if(!user) navigate("/login")
@@ -18,7 +14,6 @@ function Authenticated(
   return (
     <>
     <Outlet/>
-    {/* {children} */}
     </>
     
   )

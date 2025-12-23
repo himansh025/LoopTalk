@@ -1,62 +1,57 @@
 import { useEffect, useState } from "react";
-import { BiSearchAlt2 } from "react-icons/bi";
+import { Search } from "lucide-react";
+import { Button } from "./ui/Button";
 
 interface SearchBarProps {
-  onSearch: (query: string) => void;  // parent decides what happens
+  onSearch: (query: string) => void;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
   const [search, setSearch] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
 
-  // Handle input change
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
   };
 
-  // Prevent default submit
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSearch(search.trim());
   };
 
-  // Debounce effect
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedQuery(search.trim());
-    }, 2000);
+    }, 1000);
 
     return () => {
       clearTimeout(handler);
     };
   }, [search]);
 
-  // Trigger onSearch when debounced query changes
   useEffect(() => {
-
     onSearch(debouncedQuery);
-    // 
   }, [debouncedQuery]);
 
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex items-center w-full max-w-lg mx-auto border border-slate-200 rounded-full px-3 py-2 bg-white shadow-sm focus-within:border-indigo-300 focus-within:ring-4 focus-within:ring-indigo-100 transition-all"
+      className="mx-auto flex w-full max-w-lg items-center rounded-full border border-slate-200 bg-white px-2 py-1.5 shadow-sm transition-all focus-within:border-indigo-500 focus-within:ring-4 focus-within:ring-indigo-500/10"
     >
       <input
         value={search}
         onChange={handleChange}
         type="text"
-        placeholder="Search..."
-        className="flex-1 outline-none bg-transparent text-slate-800 px-2 placeholder:text-slate-400"
+        placeholder="Search users..."
+        className="flex-1 bg-transparent px-4 text-slate-800 placeholder:text-slate-400 focus:outline-none"
       />
-      <button
+      <Button
         type="submit"
-        className="flex items-center justify-center p-2 bg-indigo-600 hover:bg-indigo-700 rounded-full text-white transition-colors"
-        aria-label="Search"
+        size="sm"
+        className="rounded-full p-2"
       >
-        <BiSearchAlt2 className="w-5 h-5" />
-      </button>
+        <Search size={18} />
+      </Button>
     </form>
   );
 };

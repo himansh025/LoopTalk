@@ -9,6 +9,9 @@ interface User {
     fullName: string;
     profilePhoto: string;
     gender?: string;
+    age?: number;
+    hobbies?: string[];
+    popularityScore?: number;
 }
 
 interface authState {

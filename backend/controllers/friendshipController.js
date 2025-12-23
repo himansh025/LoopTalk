@@ -5,7 +5,7 @@ import { User } from "../models/userModel.js";
 export const sendFriendRequest = async (req, res) => {
   try {
     const { recipientId } = req.body;
-    const requesterId = req.user._id; // assuming auth middleware sets req.user
+    const requesterId = req.id; // assuming auth middleware sets req.id
 
     if (requesterId.toString() === recipientId) {
       return res.status(400).json({ message: "You cannot add yourself as a friend" });
@@ -41,7 +41,7 @@ export const acceptFriendRequest = async (req, res) => {
     const request = await Friendship.findById(requestId);
     if (!request) return res.status(404).json({ message: "Request not found" });
 
-    if (request.recipient.toString() !== req.user._id.toString()) {
+    if (request.recipient.toString() !== req.id.toString()) {
       return res.status(403).json({ message: "Not authorized" });
     }
 
@@ -62,7 +62,7 @@ export const rejectFriendRequest = async (req, res) => {
     const request = await Friendship.findById(requestId);
     if (!request) return res.status(404).json({ message: "Request not found" });
 
-    if (request.recipient.toString() !== req.user._id.toString()) {
+    if (request.recipient.toString() !== req.id.toString()) {
       return res.status(403).json({ message: "Not authorized" });
     }
 
@@ -101,7 +101,7 @@ export const getFriends = async (req, res) => {
 // ✅ Get Pending Requests for a User
 export const getPendingRequests = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.id;
 
     const requests = await Friendship.find({
       recipient: userId,

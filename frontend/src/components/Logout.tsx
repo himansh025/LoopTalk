@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../config/apiconfig';
 import { useDispatch } from 'react-redux';
-import { logout  } from '../store/authSlicer'; // update path as per your structure
+import { logout  } from '../store/authSlicer'; 
 
 function LogoutButton() {
   const navigate = useNavigate();

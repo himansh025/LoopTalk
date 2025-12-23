@@ -9,7 +9,10 @@ const isAuthenticated = (req, res, next) => {
         }
 
         const token = authHeader.split(" ")[1];
-        const decoded = jwt.verify(token, process.env.JWT_SECRET||"derdvfbgedvb34we3423ewveqg4vbvrrtgf");
+        const decoded = jwt.verify(token, process.env.JWT_SECRET
+            //  || "derdvfbgedvb34we3423ewveqg4vbvrrtgf"
+
+        );
         console.log("d",decoded)
         req.id = decoded.userId; 
         // attach user id to request

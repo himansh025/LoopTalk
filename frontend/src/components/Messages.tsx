@@ -2,9 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import MessageInput from "./MessageInput";
 import axiosInstance from "../config/apiconfig";
 import { toast } from "react-toastify";
-import { useAppSelector } from "../hooks/hooks";
 import { getSocket, initSocket } from "../socket";
-import { MoreVertical, Phone, Video } from "lucide-react";
+import { useSelector } from "react-redux";
 
 interface MessagesProps {
   userChat?: any;
@@ -12,7 +11,7 @@ interface MessagesProps {
 
 const Messages: React.FC<MessagesProps> = ({ userChat }) => {
   const listRef = useRef<HTMLDivElement | null>(null);
-  const { user } = useAppSelector((state) => state.auth);
+  const { user } = useSelector((state: any) => state.auth);
   const [currentMessages, setCurrentMessages] = useState<any[]>([]);
 
   // Fetch old messages
@@ -75,33 +74,10 @@ const Messages: React.FC<MessagesProps> = ({ userChat }) => {
     new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
   return (
-    <div className="flex flex-col h-full bg-slate-50">
-      {userChat && (
-        <div className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between shadow-sm z-10">
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <img
-                src={userChat?.profilePhoto || `https://ui-avatars.com/api/?name=${userChat?.fullName}`}
-                className="h-10 w-10 rounded-full object-cover border border-slate-200"
-                alt={userChat?.fullName}
-              />
-              <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
-            </div>
-            <div>
-              <h3 className="font-semibold text-slate-800">{userChat?.fullName}</h3>
-              <p className="text-xs text-green-600 font-medium">Online</p>
-            </div>
-          </div>
+    <div className="flex h-full flex-col bg-slate-50">
 
-          <div className="flex items-center gap-4 text-slate-400">
-            <button className="hover:text-slate-600 transition-colors"><Phone size={20} /></button>
-            <button className="hover:text-slate-600 transition-colors"><Video size={20} /></button>
-            <button className="hover:text-slate-600 transition-colors"><MoreVertical size={20} /></button>
-          </div>
-        </div>
-      )}
 
-      <div ref={listRef} className="flex-1 p-6 space-y-6 overflow-y-auto scroll-smooth" style={{ minHeight: 0 }}>
+      <div ref={listRef} className="flex-1 p-4 space-y-6 overflow-y-auto scroll-smooth" style={{ minHeight: 0 }}>
         {currentMessages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-slate-400">
             <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
@@ -128,8 +104,8 @@ const Messages: React.FC<MessagesProps> = ({ userChat }) => {
                 <div className={`flex flex-col max-w-[70%] ${mine ? "items-end" : "items-start"}`}>
                   <div
                     className={`px-5 py-3 text-sm leading-relaxed shadow-sm ${mine
-                        ? "bg-indigo-600 text-white rounded-2xl rounded-tr-sm"
-                        : "bg-white text-slate-800 border border-slate-200 rounded-2xl rounded-tl-sm"
+                      ? "bg-indigo-600 text-white rounded-2xl rounded-tr-sm"
+                      : "bg-white text-slate-800 border border-slate-200 rounded-2xl rounded-tl-sm"
                       }`}
                   >
                     {msg.message}
@@ -144,7 +120,8 @@ const Messages: React.FC<MessagesProps> = ({ userChat }) => {
         )}
       </div>
 
-      <div className="p-4 bg-white border-t border-slate-200">
+      <div className="p-4 bg-white  relative border-t border-slate-200">
+
         <MessageInput onSend={sendMessage} placeholder={`Message ${userChat?.fullName || '...'}`} />
       </div>
     </div>

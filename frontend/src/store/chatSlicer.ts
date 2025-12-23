@@ -1,4 +1,3 @@
-// store/slices/chatSlice.ts
 import { createSlice,type PayloadAction } from "@reduxjs/toolkit";
 import type { Chat, Message } from "../types/type.data";
 
@@ -27,7 +26,6 @@ const chatSlice = createSlice({
       if (chat) {
         chat.messages.unshift(action.payload.message);
 
-        // update lastMessage for chat list UI
         const sender = chat.participants.find(
           (u) => u.id === action.payload.message.senderId
         );

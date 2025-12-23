@@ -1,5 +1,4 @@
-import { Routes, Route, BrowserRouter } from "react-router-dom";
-import { useAppSelector } from "./hooks/hooks";
+import { Routes, Route } from "react-router-dom";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
 import Authenticated from "./components/Authenticated";
@@ -7,23 +6,31 @@ import HomePage from "./pages/HomePage";
 import LogoutButton from "./components/Logout";
 import Layout from "./components/Layout";
 import Profile from "./pages/Profile";
-import OnlineUser from "./components/OnineUser";
-import { useEffect } from "react";
+import OnlineUser from "./components/OnlineUser";
+import NetworkGraph from "./pages/NetworkGraph";
+import UserProfile from "./pages/UserProfile";
+import { useEffect, useState } from "react";
 import { initSocket, closeSocket } from "./socket";
 import { toast, ToastContainer } from "react-toastify";
 import axiosInstance from "./config/apiconfig";
 import { login } from "./store/authSlicer";
+import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import Loader from "./components/ui/Loader";
 
 function App() {
-    const { user } = useAppSelector((state) => state.auth);
+    const { user } = useSelector((state: any) => state.auth);
+    const navigate = useNavigate()
+    const [loading, setLoading] = useState(false)
+    const dispatch = useDispatch()
     // const [loading, setLoading] = useState(false)
 
     useEffect(() => {
         if (user?.id) {
             const socket = initSocket(user.id);
 
-            socket.on("newMessage", (message) => {
-                console.log("💬 New message received:", message);
+            socket.on("newMessage", () => {
+                // console.log("newMessage", message)
             });
 
             return () => {
@@ -32,46 +39,57 @@ function App() {
         }
     }, [user?.id]);
 
-    const token = sessionStorage.getItem("token")
+    const token = localStorage.getItem("token")
     useEffect(() => {
-        if (token && !user) {
+        if (user && token) navigate("/")
+
+
+        if (token) {
             const getUserProfile = async () => {
                 try {
-                    // setLoading(true)
-                    const { data } = await axiosInstance.get("/user/me");
-                    console.log(data);
-                    login(data);
+                    setLoading(true)
+                    const data = await axiosInstance.get("/user/me");
+                    dispatch(login({ user: data.data }));
+                    navigate("/")
                 } catch (error: any) {
-                    console.error(" failed:", error?.message);
                     toast.error(error.message)
+                    localStorage.removeItem("token")
+                    navigate("/login")
                 } finally {
-                    // setLoading(false)
+                    setLoading(false)
                 }
+
             };
             getUserProfile()
         }
     }, [token]);
+
+    if (loading) {
+        return <Loader />
+    }
     return (
-        <BrowserRouter>
-            <div>
 
-                <Routes>
-                    <Route path="/" element={<Layout />}>
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/register" element={<Signup />} />
+        <div>
 
-                        {/* authenticated routes */}
-                        <Route element={<Authenticated />}>
-                            <Route index path="/" element={<HomePage />} />
-                            <Route path="/logout" element={<LogoutButton />} />
-                            <Route path="/profile" element={<Profile />} />
-                            <Route path="/online" element={<OnlineUser />} />
-                        </Route>
+            <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Signup />} />
+                <Route path="/" element={<Layout />}>
+
+                    {/* authenticated routes */}
+                    <Route element={<Authenticated />}>
+                        <Route index path="/" element={<HomePage />} />
+                        <Route path="/logout" element={<LogoutButton />} />
+                        <Route path="/profile" element={<Profile />} />
+                        <Route path="/online" element={<OnlineUser />} />
+                        <Route path="/network" element={<NetworkGraph />} />
+                        <Route path="/user/:userId" element={<UserProfile />} />
                     </Route>
-                </Routes>
-                <ToastContainer />
-            </div>
-        </BrowserRouter>
+                </Route>
+            </Routes>
+            <ToastContainer />
+        </div>
+
     );
 }
 
