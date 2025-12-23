@@ -1,9 +1,9 @@
 import { Outlet, useNavigate } from 'react-router-dom'
-import { useAppSelector } from '../hooks/hooks'
 import { useEffect } from 'react'
+import { useSelector } from 'react-redux'
 
 function Authenticated() {
-  const { user } = useAppSelector((state: any) => state.auth)
+  const { user } = useSelector((state: any) => state.auth)
   // console.log(user)
   const navigate = useNavigate()
   useEffect(() => {

@@ -4,7 +4,12 @@ import { toast } from "react-toastify";
 import { Camera, Mail, User, Calendar, Edit2, X, Check, Shield } from "lucide-react";
 
 const Profile = () => {
-  const [userData, setUserData] = useState<any>({});
+  const [userData, setUserData] = useState<any>({
+    userProfile: {},
+    friendList: [],
+    friendRequests: [],
+  });
+
   const [editModel, setEditModel] = useState(false);
   const [loading, setLoading] = useState(false);
   const [previewImg, setPreviewImg] = useState<string | null>(null);
@@ -20,12 +25,17 @@ const Profile = () => {
       try {
         setLoading(true);
         const { data } = await axiosInstance.get("/user/profile");
-        const userProfile = data?.userProfile;
-        setUserData(userProfile);
+
+        setUserData({
+          userProfile: data?.userProfile,
+          friendList: data?.friendList || [],
+          friendRequests: data?.friendRequests || [],
+        });
+
         setFormData({
-          fullName: userProfile?.fullName || "",
-          email: userProfile?.email || "",
-          profilePic: null,
+          fullName: data.userProfile?.fullName || "",
+          email: data.userProfile?.email || "",
+          profilePic: data.userProfile?.profilePhoto || null,
         });
       } catch (error: any) {
         console.error("Fetching profile failed:", error?.message);
@@ -101,7 +111,10 @@ const Profile = () => {
                 <div className="relative mb-4 group">
                   <div className="w-32 h-32 rounded-full p-1 bg-gradient-to-tr from-indigo-500 to-purple-500">
                     <img
-                      src={userData?.profilePhoto || `https://ui-avatars.com/api/?name=${userData?.fullName}`}
+                      src={
+                        userData?.userProfile?.profilePhoto ||
+                        `https://ui-avatars.com/api/?name=${userData?.userProfile?.fullName}`
+                      }
                       alt="Profile"
                       className="w-full h-full rounded-full object-cover border-4 border-white"
                     />
@@ -114,12 +127,13 @@ const Profile = () => {
                   </button>
                 </div>
 
-                <h2 className="text-xl font-bold text-slate-900 mb-1">{userData?.fullName}</h2>
-                <p className="text-slate-500 text-sm mb-4">@{userData?.username}</p>
+                <h2>{userData?.userProfile?.fullName}</h2>
+                <p>@{userData?.userProfile?.username}</p>
 
                 <div className="w-full pt-4 border-t border-slate-100 flex justify-between text-sm">
                   <div className="flex flex-col">
-                    <span className="font-bold text-slate-900">{userData?.friends?.length || 0}</span>
+                    <span className="font-bold text-slate-900">{userData?.friendList?.length || 0}</span>
+
                     <span className="text-slate-500">Friends</span>
                   </div>
                   <div className="flex flex-col">
@@ -128,7 +142,7 @@ const Profile = () => {
                   </div>
                   <div className="flex flex-col">
                     <span className="font-bold text-slate-900">
-                      {userData?.createdAt ? new Date(userData.createdAt).getFullYear() : 'N/A'}
+                      {userData?.createdAt ? new Date(userData.userProfile.createdAt).getFullYear() : 'N/A'}
                     </span>
                     <span className="text-slate-500">Joined</span>
                   </div>
@@ -155,7 +169,7 @@ const Profile = () => {
                       <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1 block">Full Name</label>
                       <div className="flex items-center gap-3 text-slate-700">
                         <User size={18} className="text-slate-400" />
-                        <span>{userData?.fullName}</span>
+                        <span>{userData?.userProfile?.fullName}</span>
                       </div>
                     </div>
 
@@ -163,7 +177,7 @@ const Profile = () => {
                       <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1 block">Email Address</label>
                       <div className="flex items-center gap-3 text-slate-700">
                         <Mail size={18} className="text-slate-400" />
-                        <span>{userData?.email}</span>
+                        <span>{userData?.userProfile?.email}</span>
                       </div>
                     </div>
 
@@ -171,7 +185,7 @@ const Profile = () => {
                       <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1 block">Gender</label>
                       <div className="flex items-center gap-3 text-slate-700">
                         <Shield size={18} className="text-slate-400" />
-                        <span className="capitalize">{userData?.gender || "Not specified"}</span>
+                        <span className="capitalize">{userData?.userProfile?.gender || "Not specified"}</span>
                       </div>
                     </div>
 
@@ -179,7 +193,7 @@ const Profile = () => {
                       <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1 block">Joined Date</label>
                       <div className="flex items-center gap-3 text-slate-700">
                         <Calendar size={18} className="text-slate-400" />
-                        <span>{userData?.createdAt ? new Date(userData.createdAt).toLocaleDateString() : "N/A"}</span>
+                        <span>{userData?.userProfile?.createdAt ? new Date(userData.userProfile.createdAt).toLocaleDateString() : "N/A"}</span>
                       </div>
                     </div>
                   </div>
@@ -203,7 +217,7 @@ const Profile = () => {
                   <div className="flex justify-center">
                     <div className="relative group cursor-pointer">
                       <img
-                        src={previewImg || userData?.profilePhoto || `https://ui-avatars.com/api/?name=${userData?.fullName}`}
+                        src={previewImg || userData?.userProfile?.profilePhoto || `https://ui-avatars.com/api/?name=${userData?.userProfile?.fullName}`}
                         alt="Profile Preview"
                         className="w-24 h-24 rounded-full object-cover border-4 border-slate-100 group-hover:border-indigo-100 transition-colors"
                       />
@@ -238,6 +252,7 @@ const Profile = () => {
                       <input
                         type="email"
                         name="email"
+                        disabled
                         value={formData.email}
                         onChange={handleChange}
                         className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"

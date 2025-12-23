@@ -13,7 +13,7 @@ const Navbar: React.FC = () => {
       <nav className="bg-slate-900 text-white flex items-center justify-between px-4 py-3 h-14 shadow-md md:hidden fixed top-0 left-0 right-0 z-50">
         <div className="flex items-center gap-2">
           {/* <img src="/logo192.png" alt="Logo" className="w-8 h-8" /> */}
-          <span className="text-lg font-bold">Chit-Chat</span>
+          <span className="text-lg font-bold">DevChat</span>
         </div>
 
         <button

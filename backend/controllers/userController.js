@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import mongoose from "mongoose";
+import { Friendship } from "../models/FriendListModel.js";
 
 export const register = async (req, res) => {
     try {
@@ -120,7 +121,10 @@ export const allUsers = async (req, res) => {
             };
         }
         const allUsers = await User.find(query).select("-password");
-        return res.status(200).json(allUsers);
+        const friendRequests = await Friendship.find(req.id).select("-password");
+        console.log(friendRequests)
+        
+        return res.status(200).json({allUsers,friendRequests});
     } catch (error) {
         console.log(error);
     }
@@ -130,16 +134,57 @@ export const allUsers = async (req, res) => {
 export const profile = async (req, res) => {
     try {
         const userId = req.query.userId || req.id;
-        const userProfile = await User.findById(userId).select("-password").populate("friends");
+
+        // 1. Get user profile
+        const userProfile = await User.findById(userId).select("-password");
+
         if (!userProfile) {
             return res.status(404).json({ message: "User not found" });
         }
-        console.log(userProfile);
-        return res.status(200).json({ message: "userprofile is getting", userProfile });
+
+        // 2. Get all friendships in ONE query
+        const friendships = await Friendship.find({
+            $or: [{ requester: userId }, { recipient: userId }],
+        })
+            .populate("requester", "fullName username profilePhoto")
+            .populate("recipient", "fullName username profilePhoto");
+
+        // 3. Separate friends & requests
+        const friendList = [];
+        const friendRequests = [];
+
+        friendships.forEach((friendship) => {
+            if (friendship.status === "accepted") {
+                const friend =
+                    friendship.requester._id.toString() === userId
+                        ? friendship.recipient
+                        : friendship.requester;
+
+                friendList.push(friend);
+            }
+
+            if (
+                friendship.status === "pending" &&
+                friendship.recipient._id.toString() === userId
+            ) {
+                friendRequests.push(friendship.requester);
+            }
+        });
+
+        // 4. Single response object
+        return res.status(200).json({
+            message: "Profile fetched successfully",
+            userProfile,
+            friendList,
+            friendRequests,
+        });
+
     } catch (error) {
+        console.error(error);
         return res.status(500).json({ message: "Server error" });
     }
-}
+};
+
 
 export const getMe = async (req, res) => {
     try {

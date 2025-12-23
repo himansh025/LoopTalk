@@ -1,6 +1,6 @@
 // src/socket.ts
 import { io, Socket } from "socket.io-client";
-import { initSocketListeners } from "./socketListeners"; // <-- ADD THIS
+import { initSocketListeners } from "./socketListeners"; 
 
 // const apiUrl: string = import.meta.env.VITE_API_URL||"http://localhost:5000";
 const socketurl: string = import.meta.env.VITE_SOCKET_API_URL||"http://localhost:5000";
@@ -9,13 +9,13 @@ let socket: Socket | null = null;
 
 export const initSocket = (userId: string) => {
     if (socket) return socket;
-    console.log("userId", userId);
+    // console.log("userId", userId);
     socket = io(socketurl, {
         query: { userId }
     });
 
     socket.on("connect", () => {
-        console.log("✅ Connected to server");
+        // console.log("✅ Connected to server");
         socket?.emit("register", userId);
 
         // IMPORTANT: start listening and dispatching to Redux
@@ -23,7 +23,7 @@ export const initSocket = (userId: string) => {
     });
 
     socket.on("disconnect", () => {
-        console.log("❌ Disconnected from server");
+        // console.log("❌ Disconnected from server");
     });
 
     return socket;

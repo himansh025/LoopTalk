@@ -1,4 +1,3 @@
-// OnlineUser.tsx - Responsive width for large screens
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { initSocket, getSocket } from "../socket";
@@ -6,7 +5,8 @@ import axiosInstance from "../config/apiconfig";
 import SearchBar from "../components/OnSearch";
 import Messages from "../components/Messages";
 import { useSelector } from "react-redux";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, UserPlus, Clock } from "lucide-react";
+import { toast } from "react-toastify";
 
 interface user2 {
   id: string;
@@ -20,22 +20,23 @@ interface user2 {
 
 const Explore: React.FC = () => {
   const onlineUserIds = useSelector((state: any) => state.onlineUsers.users);
-  console.log("onlineUserIds", onlineUserIds)
-  const [allUsers, setAllUsers] = useState<user2[]>([]); // Typed correctly
+  const [allUsers, setAllUsers] = useState<user2[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'online' | 'all' | 'friends'>('online');
   const { user } = useSelector((state: any) => state.auth)
   const [openUserChat, setOpenUserChat] = useState(false);
   const [userData, setUserData] = useState({});
   const [friends, setFriends] = useState([]);
-
+  const [pendingRequests, setPendingRequests] = useState<string[]>([]);
+  const [requestList, setRequestList] = useState<string[]>([]);
   useEffect(() => {
-
     const fetchAllUsers = async () => {
       try {
         const { data } = await axiosInstance.get("/user/all");
         const me = user?._id || user?.id
-        const filteredUsers = data.filter((user: any) => user._id != me);
+        console.log("data", data);
+        const filteredUsers = data.allUsers?.filter((user: any) => user._id != me);
+        setRequestList(data.friendRequests)
         setAllUsers(filteredUsers);
         setLoading(false);
       } catch (error) {
@@ -50,7 +51,7 @@ const Explore: React.FC = () => {
         setFriends(data.friends)
         setLoading(false);
       } catch (error) {
-        console.error("Failed to fetch users:", error);
+        console.error("Failed to fetch friends:", error);
         setLoading(false);
       }
     };
@@ -65,7 +66,6 @@ const Explore: React.FC = () => {
       if (query) {
         const res = await axiosInstance.get(`/user/all?search=${query}`);
         setAllUsers(res.data);
-
       }
     } catch (err) {
       console.error("User search failed", err);
@@ -99,6 +99,21 @@ const Explore: React.FC = () => {
     setUserData(userData);
   };
 
+  const handleSendRequest = async (e: React.MouseEvent, userId: string) => {
+    e.stopPropagation();
+    try {
+      await axiosInstance.post("/friend/send", { recipientId: userId });
+      toast.success("Friend request sent!");
+      setPendingRequests([...pendingRequests, userId]);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to send request");
+    }
+  };
+
+  const isFriend = (userId: string) => {
+    return friends.some((f: any) => f._id === userId || f.id === userId);
+  };
+
   if (openUserChat) {
     return (
       <Messages
@@ -125,14 +140,14 @@ const Explore: React.FC = () => {
   const displayUsers = React.useMemo(() => {
     if (activeTab === 'online') return onlineUsers;
     if (activeTab === 'friends') return friends;
+    // if (activeTab === 'requestList') return requestList;
+
     return allUsers;
-  }, [activeTab, onlineUsers, friends, allUsers]);
+  }, [activeTab, onlineUsers, friends, allUsers, requestList]);
 
   const isUserOnline = (userId: any) => {
     return onlineUsers.some(user => user == userId);
   };
-  // console.log("isOnlineUser", isUserOnline)
-
 
   return (
     <div className="p-6 w-full max-w-7xl mx-auto">
@@ -153,6 +168,15 @@ const Explore: React.FC = () => {
           >
             All Users ({allUsers.length})
           </button>
+          {/* <button
+            onClick={() => setActiveTab('requestList')}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'requestList'
+              ? 'bg-white text-indigo-600 shadow-sm'
+              : 'text-slate-600 hover:text-slate-900'
+              }`}
+          >
+            Request List ({requestList?.length})
+          </button> */}
           <button
             onClick={() => setActiveTab('online')}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'online'
@@ -192,9 +216,10 @@ const Explore: React.FC = () => {
           {displayUsers.map((user: any) => {
             const userId = user._id || user.id;
             const userIsOnline = isUserOnline(userId);
+            const isUserFriend = isFriend(userId);
+            const isPending = pendingRequests.includes(userId);
 
             return (
-
               <div
                 key={userId}
                 onClick={() => handleViewProfile(userId)}
@@ -218,13 +243,27 @@ const Explore: React.FC = () => {
                   <p className="text-sm text-slate-500 truncate">@{user.username}</p>
                 </div>
 
-                <button
-                  onClick={(e) => handleStartChat(e, user)}
-                  className="w-full mt-auto py-2.5 px-4 bg-slate-50 text-slate-700 font-medium rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-colors flex items-center justify-center gap-2"
-                >
-                  <MessageSquare size={16} />
-                  <span>Message</span>
-                </button>
+                {isUserFriend ? (
+                  <button
+                    onClick={(e) => handleStartChat(e, user)}
+                    className="w-full mt-auto py-2.5 px-4 bg-slate-50 text-slate-700 font-medium rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-colors flex items-center justify-center gap-2"
+                  >
+                    <MessageSquare size={16} />
+                    <span>Message</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={(e) => isPending ? null : handleSendRequest(e, userId)}
+                    disabled={isPending}
+                    className={`w-full mt-auto py-2.5 px-4 font-medium rounded-lg transition-colors flex items-center justify-center gap-2 ${isPending
+                      ? "bg-yellow-50 text-yellow-600 cursor-not-allowed"
+                      : "bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white"
+                      }`}
+                  >
+                    {isPending ? <Clock size={16} /> : <UserPlus size={16} />}
+                    <span>{isPending ? "Sent" : "Add Friend"}</span>
+                  </button>
+                )}
               </div>
             );
           })}

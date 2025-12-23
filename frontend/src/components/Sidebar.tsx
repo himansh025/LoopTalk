@@ -1,9 +1,9 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { useAppDispatch, useAppSelector } from "../hooks/hooks";
 import axiosInstance from "../config/apiconfig";
 import { logout } from "../store/authSlicer";
-import { GlobeIcon, LogOut, MessageSquare, User,  Code2, Settings } from "lucide-react";
+import { GlobeIcon, LogOut, MessageSquare, User, Code2 } from "lucide-react";
 import { MdLogin } from "react-icons/md";
+import { useDispatch, useSelector } from "react-redux";
 
 interface LogoutResponse {
   message: string;
@@ -13,9 +13,9 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
-  const dispatch = useAppDispatch();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user } = useAppSelector((state) => state.auth);
+  const { user } = useSelector((state: any) => state.auth);
 
   const logoutHandler = async () => {
     try {
@@ -24,7 +24,7 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
       dispatch(logout());
       if (closeSidebar) closeSidebar();
     } catch (error) {
-      console.error(error);
+      // console.error(error);
     }
   };
 
@@ -32,7 +32,7 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
     { path: "/", icon: MessageSquare, label: "Chats" },
     { path: "/explore", icon: GlobeIcon, label: "Explore" },
     { path: "/profile", icon: User, label: "Profile" },
-    { path: "/settings", icon: Settings, label: "Settings" },
+    // { path: "/settings", icon: Settings, label: "Settings" },
   ];
 
   return (

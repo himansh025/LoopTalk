@@ -3,6 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axiosInstance from '../config/apiconfig';
 import { ArrowLeft, Mail, User as UserIcon, Calendar, Users, Heart } from 'lucide-react';
 import { Loader } from '../components/Loader';
+import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
+import Messages from '../components/Messages';
 
 interface UserProfileData {
     _id: string;
@@ -13,27 +16,28 @@ interface UserProfileData {
     gender: string;
     createdAt: string;
     friends: any[];
-    // Hobbies are not in the DB yet, so we'll mock or handle gracefully
     hobbies?: string[];
 }
 
 const UserProfile: React.FC = () => {
     const { userId } = useParams<{ userId: string }>();
     const navigate = useNavigate();
+    const { user } = useSelector((state: any) => state.auth);
+
     const [profile, setProfile] = useState<UserProfileData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [pendingRequests, setPendingRequests] = useState<string[]>([]);
+    const [openUserChat, setOpenUserChat] = useState(false);
 
     useEffect(() => {
         const fetchProfile = async () => {
             try {
                 setLoading(true);
-                // Use the modified /user/profile endpoint with userId query param
                 const url = userId ? `/user/profile?userId=${userId}` : '/user/profile';
                 const { data } = await axiosInstance.get(url);
                 console.log(data);
                 setProfile(data.userProfile);
-
             } catch (err: any) {
                 console.error("Failed to fetch profile:", err);
                 setError(err.response?.data?.message || "Failed to load profile");
@@ -46,6 +50,28 @@ const UserProfile: React.FC = () => {
             fetchProfile();
         }
     }, [userId]);
+
+    const isFriend = profile?.friends?.some((f: any) => f._id === user?._id || f.id === user?._id);
+    const isPending = userId && pendingRequests.includes(userId);
+
+    const handleSendRequest = async () => {
+        if (!userId) return;
+        try {
+            await axiosInstance.post("/friend/send", { recipientId: userId });
+            toast.success("Friend request sent!");
+            setPendingRequests([...pendingRequests, userId]);
+        } catch (error: any) {
+            toast.error(error.response?.data?.message || "Failed to send request");
+        }
+    };
+
+    const handleMessage = () => {
+        setOpenUserChat(true);
+    };
+
+    if (openUserChat && profile) {
+        return <Messages userChat={profile} />;
+    }
 
     if (loading) return <Loader />;
 
@@ -90,7 +116,28 @@ const UserProfile: React.FC = () => {
                                 />
                                 <div className={`absolute bottom-1 right-1 w-5 h-5 rounded-full border-2 border-white ${true ? 'bg-green-500' : 'bg-slate-300'}`} title="Online Status"></div>
                             </div>
-                            {/* Actions could go here (e.g. Add Friend, Message) */}
+                            {/* Actions */}
+                            <div className="flex gap-3">
+                                {isFriend ? (
+                                    <button
+                                        onClick={handleMessage}
+                                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-colors shadow-sm shadow-indigo-200"
+                                    >
+                                        Message
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={handleSendRequest}
+                                        disabled={isPending || !userId}
+                                        className={`px-4 py-2 border rounded-lg font-medium transition-colors ${isPending
+                                                ? "bg-yellow-50 text-yellow-600 border-yellow-200 cursor-not-allowed"
+                                                : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+                                            }`}
+                                    >
+                                        {isPending ? "Request Sent" : "Add Friend"}
+                                    </button>
+                                )}
+                            </div>
                         </div>
 
                         <div className="mb-8">

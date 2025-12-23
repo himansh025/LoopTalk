@@ -22,13 +22,12 @@ function App() {
     const dispatch = useDispatch()
     const [loading, setLoading] = useState(false)
     const userId = user?._id || user?.id;
+
     useEffect(() => {
-        // console.log("Initializing socket for user:", userId);
         if (userId) {
             const socket = initSocket(userId);
 
-            socket.on("newMessage", (message) => {
-                // console.log("💬 New message received:", message);
+            socket.on("newMessage", () => {
             });
 
             return () => {
@@ -64,7 +63,7 @@ function App() {
     if (loading) {
         return <Loader />
     }
-    return (    
+    return (
 
         <div>
 
@@ -78,7 +77,7 @@ function App() {
                         <Route index path="/" element={<HomePage />} />
                         <Route path="/logout" element={<LogoutButton />} />
                         <Route path="/profile" element={<Profile />} />
-                        <Route path="/explore" element={< Explore/>} />
+                        <Route path="/explore" element={< Explore />} />
                         <Route path="/user/:userId" element={<UserProfile />} />
                     </Route>
                 </Route>
