@@ -34,6 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({ closeSidebar }) => {
     { path: "/", icon: MessageSquare, label: "Chats" },
     { path: "/explore", icon: GlobeIcon, label: "Explore" },
     { path: "/profile", icon: User, label: "Profile" },
+    { path: "/network", icon: User, label: "Network" },
     // { path: "/settings", icon: Settings, label: "Settings" },
   ];
 

@@ -171,8 +171,6 @@ const GraphVisualization: React.FC = () => {
 
             <div className="absolute bottom-4 left-4 bg-white/90 backdrop-blur p-3 rounded-lg shadow-lg border border-slate-200 text-xs text-slate-600 z-10 max-w-xs">
                 <p className="font-semibold mb-1">Network Visualization</p>
-                <p>• Click a node to select it</p>
-                <p>• Click another node to send friend request</p>
                 <p>• Drag nodes to rearrange</p>
                 <p>• Scroll to zoom</p>
             </div>

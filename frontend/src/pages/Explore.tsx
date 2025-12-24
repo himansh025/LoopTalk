@@ -5,8 +5,9 @@ import axiosInstance from "../config/apiconfig";
 import SearchBar from "../components/OnSearch";
 import Messages from "../components/Messages";
 import { useSelector } from "react-redux";
-import { MessageSquare, UserPlus, Clock } from "lucide-react";
+import { MessageSquare, UserPlus, Clock, Check, X, UserMinus } from "lucide-react";
 import { toast } from "react-toastify";
+import { Loader } from "../components/Loader";
 
 interface user2 {
   id: string;
@@ -15,32 +16,45 @@ interface user2 {
   email: string;
   username: string;
   online: boolean;
-  gender: string
+  gender: string;
+  requestId?: string;
 }
 
 const Explore: React.FC = () => {
   const onlineUserIds = useSelector((state: any) => state.onlineUsers.users);
   const [allUsers, setAllUsers] = useState<user2[]>([]);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'online' | 'all' | 'friends'>('online');
+  const [activeTab, setActiveTab] = useState<'online' | 'all' | 'friends' | 'requestList'>('online');
   const { user } = useSelector((state: any) => state.auth)
   const [openUserChat, setOpenUserChat] = useState(false);
   const [userData, setUserData] = useState({});
   const [friends, setFriends] = useState([]);
   const [pendingRequests, setPendingRequests] = useState<string[]>([]);
-  const [requestList, setRequestList] = useState<string[]>([]);
+  const [requestList, setRequestList] = useState<any[]>([]);
+
+  const fetchRequests = async () => {
+    try {
+      setLoading(true);
+      const { data } = await axiosInstance.get("/friend/pending");
+      setRequestList(data.requests);
+    } catch (error) {
+      console.error("Failed to fetch requests", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     const fetchAllUsers = async () => {
       try {
+        setLoading(true);
         const { data } = await axiosInstance.get("/user/all");
         const me = user?._id || user?.id
-        console.log("data", data);
         const filteredUsers = data.allUsers?.filter((user: any) => user._id != me);
-        setRequestList(data.friendRequests)
         setAllUsers(filteredUsers);
-        setLoading(false);
       } catch (error) {
         console.error("Failed to fetch users:", error);
+      } finally {
         setLoading(false);
       }
     };
@@ -58,6 +72,7 @@ const Explore: React.FC = () => {
 
     fetchAllUsers();
     getFriends();
+    fetchRequests();
   }, []);
 
 
@@ -80,7 +95,7 @@ const Explore: React.FC = () => {
   }, [user]);
 
   const onlineUsers = React.useMemo(() => {
-    return allUsers.filter((u: any) => {
+    return allUsers?.filter((u: any) => {
       const uid = u._id || u.id;
       return onlineUserIds.includes(uid) && uid !== (user?._id || user?.id);
     });
@@ -94,7 +109,6 @@ const Explore: React.FC = () => {
 
   const handleStartChat = (e: React.MouseEvent, userData: any) => {
     e.stopPropagation();
-    console.log("Start chat with:", userData);
     setOpenUserChat(true);
     setUserData(userData);
   };
@@ -102,17 +116,65 @@ const Explore: React.FC = () => {
   const handleSendRequest = async (e: React.MouseEvent, userId: string) => {
     e.stopPropagation();
     try {
+      setLoading(true);
       await axiosInstance.post("/friend/send", { recipientId: userId });
       toast.success("Friend request sent!");
       setPendingRequests([...pendingRequests, userId]);
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Failed to send request");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAccept = async (e: React.MouseEvent, requestId: string) => {
+    e.stopPropagation();
+    try {
+      setLoading(true);
+      await axiosInstance.put(`/friend/accept/${requestId}`);
+      toast.success("Friend request accepted");
+      fetchRequests();
+      const { data } = await axiosInstance.get("/friend/friends");
+      setFriends(data.friends);
+    } catch (error: any) {
+      console.error("Failed to accept", error);
+      toast.error("Failed to accept request");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReject = async (e: React.MouseEvent, requestId: string) => {
+    e.stopPropagation();
+    try {
+      await axiosInstance.put(`/friend/reject/${requestId}`);
+      toast.success("Friend request rejected");
+      fetchRequests();
+    } catch (error: any) {
+      console.error("Failed to reject", error);
+      toast.error("Failed to reject request");
+    }
+  };
+
+  const handleRemoveFriend = async (e: React.MouseEvent, friendId: string) => {
+    e.stopPropagation();
+    if (!window.confirm("Are you sure you want to remove this friend?")) return;
+
+    try {
+      await axiosInstance.delete(`/friend/remove/${friendId}`);
+      toast.success("Friend removed");
+      const { data } = await axiosInstance.get("/friend/friends");
+      setFriends(data.friends);
+    } catch (error: any) {
+      console.error("Failed to remove friend", error);
+      toast.error("Failed to remove friend");
     }
   };
 
   const isFriend = (userId: string) => {
     return friends.some((f: any) => f._id === userId || f.id === userId);
   };
+
 
   if (openUserChat) {
     return (
@@ -122,25 +184,16 @@ const Explore: React.FC = () => {
     )
   }
 
-  if (loading) {
-    return (
-      <div className="p-6 w-full">
-        <div className="animate-pulse">
-          <div className="h-8 bg-slate-200 rounded w-48 mb-6"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-              <div key={i} className="bg-white p-4 rounded-xl border border-slate-200 h-32"></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   const displayUsers = React.useMemo(() => {
     if (activeTab === 'online') return onlineUsers;
     if (activeTab === 'friends') return friends;
-    // if (activeTab === 'requestList') return requestList;
+    if (activeTab === 'requestList') {
+      return requestList.map((req: any) => ({
+        ...req.requester,
+        requestId: req._id
+      }));
+    }
 
     return allUsers;
   }, [activeTab, onlineUsers, friends, allUsers, requestList]);
@@ -149,6 +202,9 @@ const Explore: React.FC = () => {
     return onlineUsers.some(user => user == userId);
   };
 
+  if (loading) {
+    return <Loader />
+  }
   return (
     <div className="p-6 w-full max-w-7xl mx-auto">
       {/* Header & Tabs */}
@@ -168,15 +224,15 @@ const Explore: React.FC = () => {
           >
             All Users ({allUsers.length})
           </button>
-          {/* <button
+          <button
             onClick={() => setActiveTab('requestList')}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'requestList'
               ? 'bg-white text-indigo-600 shadow-sm'
               : 'text-slate-600 hover:text-slate-900'
               }`}
           >
-            Request List ({requestList?.length})
-          </button> */}
+            Requests ({requestList?.length})
+          </button>
           <button
             onClick={() => setActiveTab('online')}
             className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === 'online'
@@ -243,14 +299,40 @@ const Explore: React.FC = () => {
                   <p className="text-sm text-slate-500 truncate">@{user.username}</p>
                 </div>
 
-                {isUserFriend ? (
-                  <button
-                    onClick={(e) => handleStartChat(e, user)}
-                    className="w-full mt-auto py-2.5 px-4 bg-slate-50 text-slate-700 font-medium rounded-lg group-hover:bg-indigo-600 group-hover:text-white transition-colors flex items-center justify-center gap-2"
-                  >
-                    <MessageSquare size={16} />
-                    <span>Message</span>
-                  </button>
+                {activeTab === 'requestList' ? (
+                  <div className="w-full mt-auto flex gap-2">
+                    <button
+                      onClick={(e) => handleAccept(e, user.requestId)}
+                      className="flex-1 py-2.5 bg-green-50 text-green-600 font-medium rounded-lg hover:bg-green-600 hover:text-white transition-colors flex items-center justify-center gap-1"
+                    >
+                      <Check size={16} />
+                      <span>Accept</span>
+                    </button>
+                    <button
+                      onClick={(e) => handleReject(e, user.requestId)}
+                      className="flex-1 py-2.5 bg-red-50 text-red-600 font-medium rounded-lg hover:bg-red-600 hover:text-white transition-colors flex items-center justify-center gap-1"
+                    >
+                      <X size={16} />
+                      <span>Reject</span>
+                    </button>
+                  </div>
+                ) : isUserFriend ? (
+                  <div className="w-full mt-auto flex gap-2">
+                    <button
+                      onClick={(e) => handleStartChat(e, user)}
+                      className="flex-1 py-2.5 bg-slate-50 text-slate-700 font-medium rounded-lg hover:bg-indigo-600 hover:text-white transition-colors flex items-center justify-center gap-2"
+                    >
+                      <MessageSquare size={16} />
+                      <span>Message</span>
+                    </button>
+                    <button
+                      onClick={(e) => handleRemoveFriend(e, userId)}
+                      className="py-2.5 px-3 bg-red-50 text-red-600 font-medium rounded-lg hover:bg-red-600 hover:text-white transition-colors flex items-center justify-center"
+                      title="Remove Friend"
+                    >
+                      <UserMinus size={16} />
+                    </button>
+                  </div>
                 ) : (
                   <button
                     onClick={(e) => isPending ? null : handleSendRequest(e, userId)}

@@ -9,7 +9,7 @@ function Layout() {
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">
       {/* Desktop Sidebar */}
-      {user&&(
+      {user && (
         < aside className="hidden md:flex w-72 flex-col h-full shrink-0">
           <Sidebar />
         </aside>
@@ -19,7 +19,7 @@ function Layout() {
       <div className="flex-1 flex flex-col h-full relative min-w-0">
         <Navbar />
 
-        <main className="flex-1 overflow-hidden flex flex-col mt-14 md:mt-0">
+        <main className="flex-1 overflow-y-auto flex flex-col mt-14 md:mt-0">
           <Outlet />
         </main>
       </div>

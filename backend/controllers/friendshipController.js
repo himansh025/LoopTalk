@@ -5,7 +5,7 @@ import { User } from "../models/userModel.js";
 export const sendFriendRequest = async (req, res) => {
   try {
     const { recipientId } = req.body;
-
+    console.log(req.id)
     const requesterId = req.id; // assuming auth middleware sets req.id
 
     if (requesterId.toString() === recipientId) {
@@ -18,7 +18,6 @@ export const sendFriendRequest = async (req, res) => {
       recipient: recipientId,
     });
 
-    await User.findByIdAndUpdate(requesterId, { $addToSet: { friendRequests: recipientId } });
     if (existing) {
       return res.status(400).json({ message: "Friend request already sent" });
     }
@@ -115,6 +114,34 @@ export const getPendingRequests = async (req, res) => {
     }).populate("requester", "fullName username profilePhoto");
 
     res.json({ requests });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ✅ Remove Friend
+export const removeFriend = async (req, res) => {
+  try {
+    const { friendId } = req.params;
+    const userId = req.id;
+
+    // Find friendship where either (requester=userId AND recipient=friendId) OR (requester=friendId AND recipient=userId)
+    const friendship = await Friendship.findOneAndDelete({
+      $or: [
+        { requester: userId, recipient: friendId },
+        { requester: friendId, recipient: userId },
+      ],
+    });
+
+    if (!friendship) {
+      return res.status(404).json({ message: "Friendship not found" });
+    }
+
+    // Remove from both users' friends lists
+    await User.findByIdAndUpdate(userId, { $pull: { friends: friendId } });
+    await User.findByIdAndUpdate(friendId, { $pull: { friends: userId } });
+
+    res.json({ message: "Friend removed successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

@@ -15,6 +15,7 @@ import { login } from "./store/authSlicer";
 import { useDispatch, useSelector } from "react-redux";
 import { Loader } from "./components/Loader";
 import Explore from "./pages/Explore";
+import NetworkGraph from "./pages/NetworkGraph";
 
 function App() {
     const { user } = useSelector((state: any) => state.auth);
@@ -42,15 +43,17 @@ function App() {
 
 
         if (token) {
+            // console.log("token", token)
             const getUserProfile = async () => {
                 try {
                     setLoading(true)
                     const { data } = await axiosInstance.get("/user/me");
+                    // console.log(data)
                     dispatch(login({ user: data }))
                     navigate("/");
 
                 } catch (error: any) {
-                    console.log(error?.response.status);
+                    // console.log(error?.response);
                     if (error?.response.status === 401) {
                         localStorage.removeItem("token")
                     }
@@ -81,6 +84,7 @@ function App() {
                         <Route index path="/" element={<HomePage />} />
                         <Route path="/logout" element={<LogoutButton />} />
                         <Route path="/profile" element={<Profile />} />
+                        <Route path="/network" element={<NetworkGraph />} />
                         <Route path="/explore" element={< Explore />} />
                         <Route path="/user/:userId" element={<UserProfile />} />
                     </Route>

@@ -6,7 +6,7 @@ import axiosInstance from "../config/apiconfig";
 import { useState } from "react";
 import { z } from "zod";
 import { login } from "../store/authSlicer";
-import {   Lock, LogIn, Mail } from "lucide-react";
+import { Lock, LogIn, Mail } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
@@ -38,6 +38,7 @@ function Login() {
       const response = await axiosInstance.post("/user/login", data);
       localStorage.setItem("token", response?.data?.token);
       const user = await axiosInstance.get("/user/me");
+      // console.log(response?.data)
 
       dispatch(
         login({
@@ -45,8 +46,7 @@ function Login() {
           token: response.data.token
         })
       );
-
-      localStorage.setItem("token", response?.data?.token.userToken);
+      localStorage.setItem("token", response?.data?.token);
       toast.success("Login successful!");
       navigate("/");
     } catch (error: any) {
