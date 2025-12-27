@@ -28,7 +28,7 @@ const io = new Server(server, {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use("/api/v1/health",async()=>{
+app.use("/api/v1/health",async(req,res)=>{
 res.send("Health is Fine");
 });
       
