@@ -28,7 +28,10 @@ const io = new Server(server, {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
+app.use("/api/v1/health",async()=>{
+res.send("Health is Fine");
+});
+      
 app.use(
   cors({
     origin: ["http://localhost:5173", process.env.CLIENT],
