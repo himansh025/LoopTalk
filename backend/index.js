@@ -19,8 +19,8 @@ const server = http.createServer(app);
 app.use(express.urlencoded({extended:true}));
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173", process.env.CLIENT],
-    methods: ["GET", "POST"],
+    origin: ["http://localhost:5173","https://dev-chat08.vercel.app", process.env.CLIENT],
+    methods: ["GET", "POST","PUT","PATCH"],
     credentials: true,
   },
 });
